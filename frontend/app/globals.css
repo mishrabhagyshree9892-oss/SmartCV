@@ -27,13 +27,13 @@
 }
 
 [data-theme='dark'] {
-  --background: #0f172a;
-  --foreground: #f8fafc;
-  --card: #1e293b;
-  --muted: #334155;
-  --muted-foreground: #94a3b8;
-  --border: #334155;
-  --secondary: #1e293b;
+  --background: #0a1f0a;
+  --foreground: #f0fff0;
+  --card: #122612;
+  --muted: #1a3a1a;
+  --muted-foreground: #a8e6a8;
+  --border: #2d5a2d;
+  --secondary: #122612;
 }
 
 body {
