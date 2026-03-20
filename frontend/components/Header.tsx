@@ -33,7 +33,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     if (auth) {
-      await signOut(auth);
+      await signOut(auth!);
       router.push('/login');
     }
   };

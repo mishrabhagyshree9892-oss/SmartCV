@@ -48,7 +48,7 @@ export default function Login() {
           setLoading(false);
           return;
         }
-        await signInWithCustomToken(auth, data.token);
+        await signInWithCustomToken(auth!, data.token);
         setMessage('Verification successful! Redirecting...');
         // Handle actual login/redirect here
         setTimeout(() => router.push('/'), 1000);
@@ -125,7 +125,7 @@ export default function Login() {
         </div>
 
         <p className="text-center text-sm font-medium text-gray-500 pt-4">
-          Don't have an account? <Link href="/signup" className="text-primary font-bold hover:underline">Sign up</Link>
+          Don&apos;t have an account? <Link href="/signup" className="text-primary font-bold hover:underline">Sign up</Link>
         </p>
       </div>
     </div>

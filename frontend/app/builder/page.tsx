@@ -23,7 +23,7 @@ export default function ResumeBuilder() {
 
   useEffect(() => {
     if (!auth) return;
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth!, (currentUser) => {
       setUser(currentUser);
     });
     return () => unsubscribe();

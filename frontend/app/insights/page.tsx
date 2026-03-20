@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect } from 'react';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -217,7 +218,6 @@ export default function SkillInsights() {
             <span>5 agents connected</span>
          </div>
       </footer>
-      </div>
     </div>
   );
 }

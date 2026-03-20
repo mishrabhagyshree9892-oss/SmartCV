@@ -10,7 +10,8 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    if (!auth) { setLoading(false); return; }
+    const unsubscribe = onAuthStateChanged(auth!, async (currentUser) => {
       if (currentUser && db) {
         const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
         setUser({ ...currentUser, ...userDoc.data() });

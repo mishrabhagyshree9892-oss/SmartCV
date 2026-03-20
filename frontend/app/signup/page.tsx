@@ -54,7 +54,7 @@ export default function Signup() {
           setLoading(false);
           return;
         }
-        await signInWithCustomToken(auth, data.token);
+        await signInWithCustomToken(auth!, data.token);
         setMessage('Verification successful! Redirecting...');
         setTimeout(() => router.push('/'), 1000);
       } else {

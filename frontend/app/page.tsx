@@ -16,7 +16,7 @@ export default function Home() {
       setLoading(false);
       return;
     }
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth!, async (currentUser) => {
       setUser(currentUser);
       if (currentUser && db) {
         const userDoc = await getDoc(doc(db, 'users', currentUser.uid));

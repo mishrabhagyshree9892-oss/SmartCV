@@ -36,7 +36,7 @@ export default function ProfileSetup({ onComplete }: { onComplete: () => void })
       <div className="bg-card w-full max-w-lg rounded-3xl border border-border shadow-2xl p-8 animate-in zoom-in duration-300">
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-foreground">Complete Your Profile</h2>
-          <p className="text-muted-foreground text-sm">Let's get started by setting up your basic information.</p>
+          <p className="text-muted-foreground text-sm">Let&apos;s get started by setting up your basic information.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
