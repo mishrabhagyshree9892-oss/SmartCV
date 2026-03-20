@@ -118,7 +118,7 @@ export default function Signup() {
                     maxLength={6}
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl text-center text-2xl font-bold tracking-[1em] focus:ring-2 focus:ring-primary outline-none" 
+                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl text-center text-2xl font-bold tracking-widest focus:ring-2 focus:ring-primary outline-none" 
                   />
                 </div>
               </div>

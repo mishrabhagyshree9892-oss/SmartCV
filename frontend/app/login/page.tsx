@@ -107,7 +107,7 @@ export default function Login() {
                     maxLength={6}
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
-                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl text-center text-2xl font-bold tracking-[0.5em] focus:ring-2 focus:ring-primary/20 outline-none" 
+                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl text-center text-2xl font-bold tracking-widest focus:ring-2 focus:ring-primary/20 outline-none" 
                     placeholder="000000"
                   />
                 </div>
