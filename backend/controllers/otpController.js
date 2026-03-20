@@ -1,17 +1,35 @@
 const nodemailer = require('nodemailer');
 const admin = require('firebase-admin');
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-});
+// Create transporter inside function so env vars are always fresh
+function createTransporter() {
+    return nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+        }
+    });
+}
 
 exports.sendOTP = async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email is required' });
+
+    // Check Firebase is initialized
+    if (admin.apps.length === 0) {
+        console.error('Firebase Admin not initialized when sendOTP called');
+        return res.status(500).json({ error: 'Database not initialized. Contact support.' });
+    }
+
+    // Check email config
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        console.error('Email credentials missing:', {
+            user: process.env.EMAIL_USER ? 'present' : 'MISSING',
+            pass: process.env.EMAIL_PASS ? 'present' : 'MISSING'
+        });
+        return res.status(500).json({ error: 'Email service not configured.' });
+    }
 
     try {
         const db = admin.firestore();
@@ -25,6 +43,9 @@ exports.sendOTP = async (req, res) => {
             createdAt: admin.firestore.FieldValue.serverTimestamp()
         });
 
+        console.log(`OTP stored in Firestore for ${email}`);
+
+        const transporter = createTransporter();
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: email,
@@ -33,22 +54,28 @@ exports.sendOTP = async (req, res) => {
         };
 
         await transporter.sendMail(mailOptions);
+        console.log(`OTP email sent successfully to ${email}`);
         res.status(200).json({ message: 'OTP sent to email' });
     } catch (error) {
-        console.error('OTP Send error:', error);
-        res.status(500).json({ error: 'Failed to send OTP. Check server logs.' });
+        console.error('OTP Send error:', error.message);
+        console.error('Full error:', error);
+        res.status(500).json({ error: `Failed to send OTP: ${error.message}` });
     }
 };
 
 exports.verifyOTP = async (req, res) => {
     const { email, otp } = req.body;
-    
+
+    if (admin.apps.length === 0) {
+        return res.status(500).json({ error: 'Database not initialized.' });
+    }
+
     try {
         const db = admin.firestore();
         const otpDoc = await db.collection('otps').doc(email).get();
 
         if (!otpDoc.exists) return res.status(400).json({ error: 'OTP not found. Please request a new one.' });
-        
+
         const data = otpDoc.data();
         const now = admin.firestore.Timestamp.now();
 
@@ -65,7 +92,7 @@ exports.verifyOTP = async (req, res) => {
             res.status(400).json({ error: 'Invalid OTP' });
         }
     } catch (error) {
-        console.error('OTP Verify error:', error);
-        res.status(500).json({ error: 'Server error during verification' });
+        console.error('OTP Verify error:', error.message);
+        res.status(500).json({ error: `Server error during verification: ${error.message}` });
     }
 };

@@ -12,25 +12,49 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Firebase Admin (Conditional Initialization)
+// Firebase Admin Initialization
+let firebaseError = null;
 console.log("Checking Firebase configuration...");
-if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY) {
+
+const projectId = process.env.FIREBASE_PROJECT_ID;
+const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+
+console.log("FIREBASE_PROJECT_ID:", projectId ? "present" : "MISSING");
+console.log("FIREBASE_CLIENT_EMAIL:", clientEmail ? "present" : "MISSING");
+console.log("FIREBASE_PRIVATE_KEY:", privateKey ? `present (length: ${privateKey.length})` : "MISSING");
+
+if (projectId && privateKey && clientEmail) {
     try {
-        console.log("Initializing Firebase Admin for project:", process.env.FIREBASE_PROJECT_ID);
-        const privateKey = process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n').replace(/"/g, '');
+        // Fix private key - handle all escape variations from Render/env
+        if (privateKey.includes('\\n')) {
+            privateKey = privateKey.replace(/\\n/g, '\n');
+        }
+        // Remove surrounding quotes if present
+        privateKey = privateKey.replace(/^"|"$/g, '');
+
+        console.log("Private key starts with:", privateKey.substring(0, 30));
+
         admin.initializeApp({
             credential: admin.credential.cert({
-                projectId: process.env.FIREBASE_PROJECT_ID,
-                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                privateKey: privateKey,
+                projectId,
+                clientEmail,
+                privateKey,
             }),
         });
-        console.log("Firebase Admin Initialized Successfully");
+        console.log("✅ Firebase Admin Initialized Successfully");
     } catch (error) {
-        console.error("Firebase Admin Initialization FAILED:", error.message);
+        firebaseError = error.message;
+        console.error("❌ Firebase Admin Initialization FAILED:", error.message);
     }
 } else {
-    console.warn("Firebase environment variables missing. Firebase Admin NOT initialized.");
+    firebaseError = "Missing environment variables";
+    console.warn("⚠️ Firebase environment variables missing. Firebase Admin NOT initialized.");
+    console.warn("Missing:", {
+        projectId: !projectId,
+        clientEmail: !clientEmail,
+        privateKey: !privateKey
+    });
 }
 
 // Routes
@@ -38,48 +62,48 @@ app.get('/', (req, res) => {
     res.send('SmartCV API is running');
 });
 
+// Health check with detailed debug info
 app.get('/api/health', async (req, res) => {
-    try {
-        const adminStatus = admin.apps.length > 0 ? 'initialized' : 'not initialized';
-        const config = {
-            projectId: process.env.FIREBASE_PROJECT_ID ? 'present' : 'missing',
-            privateKey: process.env.FIREBASE_PRIVATE_KEY ? 'present' : 'missing',
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL ? 'present' : 'missing'
-        };
-        
-        if (admin.apps.length > 0) {
+    const config = {
+        projectId: process.env.FIREBASE_PROJECT_ID ? 'present' : 'MISSING',
+        privateKey: process.env.FIREBASE_PRIVATE_KEY ? `present (${process.env.FIREBASE_PRIVATE_KEY.length} chars)` : 'MISSING',
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL ? 'present' : 'MISSING',
+        emailUser: process.env.EMAIL_USER ? 'present' : 'MISSING',
+        emailPass: process.env.EMAIL_PASS ? 'present' : 'MISSING',
+        lyzrKey: process.env.LYZR_API_KEY ? 'present' : 'MISSING',
+        firebaseInitialized: admin.apps.length > 0,
+        firebaseError: firebaseError || null,
+        nodeEnv: process.env.NODE_ENV,
+    };
+
+    if (admin.apps.length > 0) {
+        try {
             const collections = await admin.firestore().listCollections();
-            res.status(200).json({ 
-                status: 'ok', 
-                database: 'connected', 
+            res.status(200).json({
+                status: 'ok',
+                database: 'connected',
                 collections: collections.length,
-                adminStatus,
-                config 
+                config
             });
-        } else {
-            res.status(500).json({ 
-                status: 'error', 
-                database: 'disconnected', 
-                message: 'Firebase Admin not initialized',
-                adminStatus,
-                config 
+        } catch (err) {
+            res.status(500).json({
+                status: 'error',
+                database: 'firestore_error',
+                message: err.message,
+                config
             });
         }
-    } catch (error) {
-        res.status(500).json({ 
-            status: 'error', 
-            database: 'disconnected', 
-            message: error.message,
-            config: {
-                projectId: process.env.FIREBASE_PROJECT_ID ? 'present' : 'missing',
-                privateKey: process.env.FIREBASE_PRIVATE_KEY ? 'present' : 'missing',
-                clientEmail: process.env.FIREBASE_CLIENT_EMAIL ? 'present' : 'missing'
-            }
+    } else {
+        res.status(500).json({
+            status: 'error',
+            database: 'not_initialized',
+            message: firebaseError || 'Firebase Admin not initialized',
+            config
         });
     }
 });
 
-// Import controllers/routes
+// Import routes
 const otpRoutes = require('./routes/otpRoutes');
 const resumeRoutes = require('./routes/resumeRoutes');
 const templateRoutes = require('./routes/templateRoutes');
