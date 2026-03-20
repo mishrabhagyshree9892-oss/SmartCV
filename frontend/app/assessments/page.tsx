@@ -45,8 +45,35 @@ export default function Assessments() {
         })
       });
       const data = await response.json();
-      if (data.result?.questions) {
-        setQuestions(data.result.questions);
+      console.log('Assessment data:', data);
+      
+      // Try multiple paths to find questions array
+      let foundQuestions = null;
+      if (data.result?.questions) foundQuestions = data.result.questions;
+      else if (data.questions) foundQuestions = data.questions;
+      else if (data.data?.questions) foundQuestions = data.data.questions;
+      else if (typeof data.result === 'string') {
+        // Try parsing JSON string from result
+        try {
+          const parsed = JSON.parse(data.result);
+          if (parsed.questions) foundQuestions = parsed.questions;
+        } catch {}
+      } else if (data.response) {
+        try {
+          const match = data.response.match(/\{[\s\S]*\}/);
+          if (match) {
+            const parsed = JSON.parse(match[0]);
+            if (parsed.questions) foundQuestions = parsed.questions;
+          }
+        } catch {}
+      }
+      
+      if (foundQuestions && foundQuestions.length > 0) {
+        setQuestions(foundQuestions);
+      } else {
+        console.warn('No questions found in response:', data);
+        // Show error state
+        setQuestions([]);
       }
     } catch (error) {
       console.error('Test generation failed:', error);
