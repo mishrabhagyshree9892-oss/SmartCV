@@ -16,7 +16,7 @@ export default function Login() {
   const sendOTP = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/otp/send`, {
+      const res = await fetch('/api/otp/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -36,7 +36,7 @@ export default function Login() {
   const verifyOTP = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/otp/verify`, {
+      const res = await fetch('/api/otp/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp })
