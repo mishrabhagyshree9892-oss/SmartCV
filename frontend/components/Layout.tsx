@@ -46,17 +46,28 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }
 
   // Dashboard / Authenticated Layout
+  if (user) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex overflow-hidden" style={{ 
+        background: 'linear-gradient(135deg, rgb(234, 246, 242) 0%, rgb(231, 243, 243) 30%, rgb(238, 247, 244) 60%, rgb(234, 246, 238) 100%)' 
+      }}>
+        <Sidebar />
+        <div className="flex-1 min-w-0 flex flex-col min-h-screen relative h-screen overflow-hidden">
+          <Header />
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1240px] mx-auto w-full overflow-y-auto custom-scrollbar h-full">
+            {children}
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback for Landing / Not logged in (no sidebar/header)
   return (
-    <div className="min-h-screen bg-background text-foreground flex overflow-hidden" style={{ 
+    <div className="min-h-screen bg-background text-foreground" style={{ 
       background: 'linear-gradient(135deg, rgb(234, 246, 242) 0%, rgb(231, 243, 243) 30%, rgb(238, 247, 244) 60%, rgb(234, 246, 238) 100%)' 
     }}>
-      <Sidebar />
-      <div className="flex-1 min-w-0 flex flex-col min-h-screen relative h-screen overflow-hidden">
-        <Header />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1240px] mx-auto w-full overflow-y-auto custom-scrollbar h-full">
-          {children}
-        </main>
-      </div>
+      {children}
     </div>
   );
 }

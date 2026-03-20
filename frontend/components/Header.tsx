@@ -3,14 +3,44 @@ import { usePathname } from 'next/navigation';
 import { useTheme } from '@/context/ThemeContext';
 import { useNotifications } from '@/context/NotificationContext';
 import NotificationList from './NotificationList';
-import { Sun, Moon, Bell } from 'lucide-react';
-import { useState } from 'react';
+import { Sun, Moon, Bell, User, LogOut } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { auth, db } from '@/lib/firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
 
 export default function Header() {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
   const { unreadCount } = useNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!auth) return;
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser && db) {
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        setUser({ ...currentUser, ...userDoc.data() });
+      } else {
+        setUser(null);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    if (auth) {
+      await signOut(auth);
+      router.push('/login');
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
+  };
   
   const getTitle = () => {
     switch (pathname) {
@@ -69,6 +99,35 @@ export default function Header() {
             <Sun className="w-4 h-4 text-amber-400" />
           )}
         </button>
+
+        {user && (
+          <div className="flex items-center gap-3 pl-2 border-l border-border ml-1">
+            <div className="hidden md:flex flex-col items-end">
+              <span className="text-[11px] font-bold text-foreground leading-tight">{user.fullName || 'User'}</span>
+              <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-tighter">Professional Account</span>
+            </div>
+            <div className="relative group">
+               <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs shadow-sm group-hover:bg-primary/20 transition-all cursor-pointer">
+                 {getInitials(user.fullName)}
+               </div>
+               
+               {/* Simple logout tooltip/menu on hover or click */}
+               <div className="absolute top-full right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all py-2 z-50">
+                  <div className="px-4 py-2 border-b border-border mb-1">
+                    <p className="text-[11px] font-bold truncate">{user.fullName}</p>
+                    <p className="text-[9px] text-muted-foreground truncate">{user.email}</p>
+                  </div>
+                  <button 
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-[11px] font-medium text-rose-500 hover:bg-muted transition-all"
+                  >
+                    <LogOut className="w-3 h-3" />
+                    Sign Out
+                  </button>
+               </div>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );

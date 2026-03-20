@@ -26,8 +26,13 @@ export default function Signup() {
       } else {
         setMessage('Failed to send OTP. Try again.');
       }
-    } catch (err) {
-      setMessage('Error connecting to server.');
+    } catch (err: any) {
+      console.error('Verify error:', err);
+      if (err.code === 'auth/configuration-not-found') {
+        setMessage('Firebase Auth not enabled. Click "Get Started" in Authentication Console.');
+      } else {
+        setMessage(err.message || 'Error connecting to server.');
+      }
     }
     setLoading(false);
   };
@@ -55,9 +60,14 @@ export default function Signup() {
       } else {
         setMessage(data.error || 'Invalid OTP. Please try again.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Verify error:', err);
-      setMessage('Error connecting to server.');
+      // Show more descriptive error for Firebase configuration issues
+      if (err.code === 'auth/configuration-not-found') {
+        setMessage('Firebase Auth not enabled in Console. Please click "Get Started" in Authentication tab.');
+      } else {
+        setMessage(err.message || 'Error connecting to server.');
+      }
     }
     setLoading(false);
   };

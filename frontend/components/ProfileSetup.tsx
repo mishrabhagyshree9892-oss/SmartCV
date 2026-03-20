@@ -15,7 +15,7 @@ export default function ProfileSetup({ onComplete }: { onComplete: () => void })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth.currentUser) return;
+    if (!auth || !auth.currentUser || !db) return;
     setLoading(true);
     try {
       await setDoc(doc(db, 'users', auth.currentUser.uid), {

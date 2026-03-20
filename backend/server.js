@@ -83,9 +83,11 @@ app.get('/api/health', async (req, res) => {
 const otpRoutes = require('./routes/otpRoutes');
 const resumeRoutes = require('./routes/resumeRoutes');
 const templateRoutes = require('./routes/templateRoutes');
+const agentRoutes = require('./routes/agentRoutes');
 app.use('/api/otp', otpRoutes);
 app.use('/api/resumes', resumeRoutes);
 app.use('/api/templates', templateRoutes);
+app.use('/api/agents', agentRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
