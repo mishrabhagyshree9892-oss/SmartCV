@@ -67,6 +67,26 @@ app.get('/', (req, res) => {
     res.send('SmartCV API is running');
 });
 
+// Debug endpoint - always 200, shows exact Firebase init info
+app.get('/api/debug', (req, res) => {
+    const rawKey = process.env.FIREBASE_PRIVATE_KEY || '';
+    res.status(200).json({
+        firebaseApps: admin.apps.length,
+        firebaseError: firebaseError,
+        envVars: {
+            projectId: process.env.FIREBASE_PROJECT_ID ? 'present' : 'MISSING',
+            clientEmail: process.env.FIREBASE_CLIENT_EMAIL ? 'present' : 'MISSING',
+            emailUser: process.env.EMAIL_USER ? 'present' : 'MISSING',
+            emailPass: process.env.EMAIL_PASS ? 'present' : 'MISSING',
+            privateKeyLength: rawKey.length,
+            privateKeyFirst50: rawKey.substring(0, 50),
+            privateKeyHasNewlines: rawKey.includes('\n'),
+            privateKeyHasLiteralN: rawKey.includes('\\n'),
+        }
+    });
+});
+
+
 // Health check with detailed debug info
 app.get('/api/health', async (req, res) => {
     const config = {
