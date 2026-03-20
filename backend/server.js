@@ -26,12 +26,17 @@ console.log("FIREBASE_PRIVATE_KEY:", privateKey ? `present (length: ${privateKey
 
 if (projectId && privateKey && clientEmail) {
     try {
-        // Fix private key - handle all escape variations from Render/env
-        if (privateKey.includes('\\n')) {
-            privateKey = privateKey.replace(/\\n/g, '\n');
+        // Fix private key - handle ALL variations from Render/Vercel/env
+        // Step 1: Remove surrounding quotes if present
+        privateKey = privateKey.replace(/^["']|["']$/g, '');
+        // Step 2: Replace literal \n (two chars) with actual newline
+        privateKey = privateKey.replace(/\\n/g, '\n');
+        // Step 3: If somehow still no newlines in the key body, try splitting on spaces after header
+        if (!privateKey.includes('\n') && privateKey.includes('BEGIN PRIVATE KEY')) {
+            privateKey = privateKey
+                .replace('-----BEGIN PRIVATE KEY----- ', '-----BEGIN PRIVATE KEY-----\n')
+                .replace(' -----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
         }
-        // Remove surrounding quotes if present
-        privateKey = privateKey.replace(/^"|"$/g, '');
 
         console.log("Private key starts with:", privateKey.substring(0, 30));
 
