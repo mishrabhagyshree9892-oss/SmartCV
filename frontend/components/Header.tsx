@@ -1,8 +1,16 @@
 "use client";
 import { usePathname } from 'next/navigation';
+import { useTheme } from '@/context/ThemeContext';
+import { useNotifications } from '@/context/NotificationContext';
+import NotificationList from './NotificationList';
+import { Sun, Moon, Bell } from 'lucide-react';
+import { useState } from 'react';
 
 export default function Header() {
   const pathname = usePathname();
+  const { theme, toggleTheme } = useTheme();
+  const { unreadCount } = useNotifications();
+  const [showNotifications, setShowNotifications] = useState(false);
   
   const getTitle = () => {
     switch (pathname) {
@@ -13,9 +21,9 @@ export default function Header() {
       case '/insights': return 'Skill Insights';
       case '/assessments': return 'Assessments';
       case '/employer': return 'Employer Portal';
-      case '/signup': return 'Re-Resume_Me | Join Now';
-      case '/login': return 'Re-Resume_Me | Sign In';
-      default: return 'Re-Resume_Me';
+      case '/signup': return 'SmartCV | Join Now';
+      case '/login': return 'SmartCV | Sign In';
+      default: return 'SmartCV';
     }
   };
 
@@ -25,7 +33,7 @@ export default function Header() {
         <button className="lg:hidden p-1.5 rounded-md hover:bg-secondary/50">
           <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
-        <h1 className="text-sm font-bold text-gray-900 hidden sm:block">{getTitle()}</h1>
+        <h1 className="text-sm font-bold text-foreground hidden sm:block">{getTitle()}</h1>
       </div>
 
       <div className="flex items-center gap-4">
@@ -35,16 +43,32 @@ export default function Header() {
         </div>
         
         <div className="relative cursor-pointer group">
-          <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-gray-400 group-hover:text-gray-700 transition-colors" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-          <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-primary text-[7px] text-white flex items-center justify-center font-bold">3</div>
+          <button 
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="p-1.5 rounded-lg hover:bg-muted transition-all relative"
+          >
+            <Bell className={`w-4 h-4 ${showNotifications ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'} transition-colors`} />
+            {unreadCount > 0 && (
+              <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-primary text-[7px] text-white flex items-center justify-center font-bold border border-background">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </div>
+            )}
+          </button>
+          
+          {showNotifications && <NotificationList />}
         </div>
 
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-bold text-gray-400 cursor-pointer whitespace-nowrap" htmlFor="sample-toggle">Sample Data</label>
-          <div className="w-9 h-5 bg-gray-200 rounded-full relative cursor-pointer" id="sample-toggle">
-            <div className="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow-sm" />
-          </div>
-        </div>
+        <button 
+          onClick={toggleTheme}
+          className="p-2 rounded-xl bg-muted/50 hover:bg-muted transition-all border border-border"
+          title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+        >
+          {theme === 'light' ? (
+            <Moon className="w-4 h-4 text-muted-foreground" />
+          ) : (
+            <Sun className="w-4 h-4 text-amber-400" />
+          )}
+        </button>
       </div>
     </header>
   );

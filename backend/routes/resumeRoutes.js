@@ -6,5 +6,6 @@ router.post('/', resumeController.createResume);
 router.get('/:userId', resumeController.getResumes);
 router.put('/:id', resumeController.updateResume);
 router.delete('/:id', resumeController.deleteResume);
+router.post('/:id/view', resumeController.viewResume);
 
 module.exports = router;

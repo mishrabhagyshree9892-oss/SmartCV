@@ -16,14 +16,14 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="fixed lg:sticky top-0 left-0 z-40 h-screen w-[240px] bg-white/90 backdrop-blur-[20px] border-r border-gray-100 flex flex-col transition-transform duration-300">
-      <div className="p-4 border-b border-gray-50">
+    <aside className="fixed lg:sticky top-0 left-0 z-40 h-screen w-[240px] bg-card/90 backdrop-blur-[20px] border-r border-border flex flex-col transition-transform duration-300">
+      <div className="p-4 border-b border-border">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shadow-[0_0_10px_rgba(16,185,129,0.15)]">
             <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-primary" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-bold text-gray-900 tracking-tight">Re-Resume_Me</h2>
+            <h2 className="text-sm font-bold text-foreground tracking-tight">SmartCV</h2>
             <div className="inline-flex items-center rounded-full bg-primary/10 text-primary text-[9px] px-1.5 py-0 border border-primary/20 font-bold uppercase">Enterprise</div>
           </div>
         </div>
@@ -37,7 +37,7 @@ export default function Sidebar() {
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] transition-all ${
               pathname === link.href 
                 ? 'bg-primary/10 text-primary font-bold' 
-                : 'text-gray-500 hover:bg-gray-50'
+                : 'text-muted-foreground hover:bg-muted/50'
             }`}
           >
             <span className={pathname === link.href ? 'text-primary' : ''}>{link.icon}</span>
@@ -46,18 +46,18 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="p-3 mt-auto border-t border-gray-50 bg-gray-50/30 space-y-2">
-        <div className="flex items-center gap-2 p-2 rounded-lg bg-white/50 border border-gray-100">
+      <div className="p-3 mt-auto border-t border-border bg-muted/30 space-y-2">
+        <div className="flex items-center gap-2 p-2 rounded-lg bg-card/50 border border-border">
           <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-          <span className="text-[10px] text-gray-400 font-bold">Blockchain: Active</span>
+          <span className="text-[10px] text-muted-foreground font-bold">Blockchain: Active</span>
         </div>
-        <div className="flex items-center gap-2 p-2 rounded-lg bg-white/50 border border-gray-100">
+        <div className="flex items-center gap-2 p-2 rounded-lg bg-card/50 border border-border">
           <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-          <span className="text-[10px] text-gray-400 font-bold">Proctoring: Online</span>
+          <span className="text-[10px] text-muted-foreground font-bold">Proctoring: Online</span>
         </div>
         <div className="flex items-center gap-1.5 px-2 py-1">
-          <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3 text-gray-300" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-          <span className="text-[9px] text-gray-300 font-medium">Secured by Re-Resume_Me</span>
+          <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3 text-muted-foreground/30" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <span className="text-[9px] text-muted-foreground/30 font-medium">Secured by SmartCV</span>
         </div>
       </div>
     </aside>

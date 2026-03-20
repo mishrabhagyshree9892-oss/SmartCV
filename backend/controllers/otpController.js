@@ -22,8 +22,8 @@ exports.sendOTP = async (req, res) => {
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to: email,
-        subject: 'Your Re-Resume_Me OTP',
-        text: `Your OTP for signup is: ${otp}`
+        subject: 'SmartCV Verification Code',
+        text: `Your verification code is ${otp}. This code will expire in 10 minutes.`
     };
 
     try {

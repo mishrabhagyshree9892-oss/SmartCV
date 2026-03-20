@@ -3,13 +3,13 @@
 @theme {
   --color-primary: #10b981;
   --color-primary-foreground: #ffffff;
-  --color-background: #f8fafc;
-  --color-foreground: #0f172a;
-  --color-card: #ffffff;
-  --color-muted: #f1f5f9;
-  --color-muted-foreground: #64748b;
-  --color-border: #e2e8f0;
-  --color-secondary: #f8fafc;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-secondary: var(--secondary);
   --radius: 0.75rem;
 }
 
@@ -24,6 +24,16 @@
   --border: #e2e8f0;
   --secondary: #f8fafc;
   --radius: 0.75rem;
+}
+
+[data-theme='dark'] {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --card: #1e293b;
+  --muted: #334155;
+  --muted-foreground: #94a3b8;
+  --border: #334155;
+  --secondary: #1e293b;
 }
 
 body {

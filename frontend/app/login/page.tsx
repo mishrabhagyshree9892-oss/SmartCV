@@ -65,14 +65,9 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-10 space-y-8 animate-in fade-in zoom-in duration-500">
         <div className="text-center">
-          <div className="flex items-center justify-center gap-2.5 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-              <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-white" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            </div>
-            <h2 className="text-xl font-bold tracking-tight">Re-Resume_Me</h2>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900">Welcome Back</h2>
-          <p className="text-gray-500 mt-2 text-sm font-medium">Log in to control your verified career assets.</p>
+          <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4">S</div>
+          <h2 className="text-3xl font-bold">Welcome Back</h2>
+          <p className="text-gray-500 mt-2">Sign in to your SmartCV account.</p>
         </div>
 
         {message && (

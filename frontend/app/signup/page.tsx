@@ -65,11 +65,11 @@ export default function Signup() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-10 space-y-8">
-        <div className="text-center">
-          <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4">R</div>
-          <h2 className="text-3xl font-bold">Create Account</h2>
-          <p className="text-gray-500 mt-2">Join Re-Resume_Me to land your dream job.</p>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white font-bold text-2xl">S</div>
         </div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-1">Create Account</h1>
+        <p className="text-gray-500 text-sm mb-6 font-medium tracking-tight">Join SmartCV to land your dream job.</p>
 
         {message && (
           <div className={`p-4 rounded-xl text-sm font-medium ${message.includes('success') ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>

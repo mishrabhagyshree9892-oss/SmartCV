@@ -35,7 +35,7 @@ if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY) {
 
 // Routes
 app.get('/', (req, res) => {
-    res.send('Re-Resume_Me API is running');
+    res.send('SmartCV API is running');
 });
 
 app.get('/api/health', async (req, res) => {
@@ -82,8 +82,10 @@ app.get('/api/health', async (req, res) => {
 // Import controllers/routes
 const otpRoutes = require('./routes/otpRoutes');
 const resumeRoutes = require('./routes/resumeRoutes');
+const templateRoutes = require('./routes/templateRoutes');
 app.use('/api/otp', otpRoutes);
 app.use('/api/resumes', resumeRoutes);
+app.use('/api/templates', templateRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

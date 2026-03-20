@@ -13,11 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Re-Resume_Me | Enterprise AI Career Growth",
+  title: "SmartCV | Enterprise AI Career Growth",
   description: "Blockchain-verified career intelligence and AI-powered resume optimization.",
 };
 
 import Layout from "@/components/Layout";
+import { ThemeProvider } from "@/context/ThemeContext";
+import { NotificationProvider } from "@/context/NotificationContext";
 
 export default function RootLayout({
   children,
@@ -25,9 +27,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="antialiased" suppressHydrationWarning>
-        <Layout>{children}</Layout>
+        <ThemeProvider>
+          <NotificationProvider>
+            <Layout>{children}</Layout>
+          </NotificationProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

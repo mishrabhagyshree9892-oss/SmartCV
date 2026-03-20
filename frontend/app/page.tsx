@@ -1,16 +1,27 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import Landing from '@/components/Landing';
+import ProfileSetup from '@/components/ProfileSetup';
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasProfile, setHasProfile] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    if (!auth) {
+      setLoading(false);
+      return;
+    }
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+      if (currentUser && db) {
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        setHasProfile(userDoc.exists() && userDoc.data()?.profileCompleted);
+      }
       setLoading(false);
     });
     return () => unsubscribe();
@@ -37,6 +48,10 @@ export default function Home() {
 
   if (!user) {
     return <Landing />;
+  }
+
+  if (!hasProfile) {
+    return <ProfileSetup onComplete={() => setHasProfile(true)} />;
   }
 
   return (
@@ -70,7 +85,24 @@ export default function Home() {
            <div className="text-center space-y-3">
               <div className="w-14 h-14 bg-muted rounded-full flex items-center justify-center text-2xl mx-auto text-muted-foreground/40">🕘</div>
               <h4 className="font-bold text-muted-foreground text-sm">No activity yet</h4>
-              <p className="text-[10px] text-muted-foreground/60">Start using Re-Resume_Me to see your activity here</p>
+              <p className="text-[10px] text-muted-foreground/60">Start using SmartCV to see your activity here</p>
+           </div>
+           
+          <span className="text-[9px] text-muted-foreground/30 font-medium">Secured by SmartCV</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 pt-4">
+        <div className="lg:col-span-2 bg-card/80 backdrop-blur-[12px] p-8 rounded-3xl border border-border/60 flex flex-col items-center justify-center min-h-[350px]">
+           <div className="flex items-center gap-2 self-start mb-auto">
+              <span className="text-primary text-sm">🕒</span>
+              <h3 className="font-bold text-foreground text-sm">Recent Activity</h3>
+           </div>
+           
+           <div className="text-center space-y-3">
+              <div className="w-14 h-14 bg-muted rounded-full flex items-center justify-center text-2xl mx-auto text-muted-foreground/40">🕘</div>
+              <h4 className="font-bold text-muted-foreground text-sm">No activity yet</h4>
+              <p className="text-[10px] text-muted-foreground/60">Start using SmartCV to see your activity here</p>
            </div>
            
            <div className="mt-auto invisible text-[10px]">spacer</div>
