@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
 
-// Initialize Firebase Admin (singleton)
-if (!admin.apps.length) {
+function getFirebaseAdmin() {
+  if (admin.apps.length > 0) return admin.apps[0]!;
+
   let privateKey = process.env.FIREBASE_PRIVATE_KEY || '';
   privateKey = privateKey.replace(/^["']|["']$/g, '');
   privateKey = privateKey.replace(/\\n/g, '\n');
 
-  admin.initializeApp({
+  return admin.initializeApp({
     credential: admin.credential.cert({
       projectId: process.env.FIREBASE_PROJECT_ID,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
@@ -20,6 +21,7 @@ export async function POST(req: NextRequest) {
   const { email, otp } = await req.json();
 
   try {
+    getFirebaseAdmin();
     const db = admin.firestore();
     const otpDoc = await db.collection('otps').doc(email).get();
 
