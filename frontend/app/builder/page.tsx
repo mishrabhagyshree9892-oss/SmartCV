@@ -57,7 +57,7 @@ export default function ResumeBuilder() {
   
   // Resume Data State
   const [resumeData, setResumeData] = useState({
-    personal: { fullName: '', email: '', phone: '', linkedin: '', photo: '', github: '', behance: '', kaggle: '' },
+    personal: { fullName: '', email: '', phone: '', linkedin: '', photo: '', github: '', behance: '', kaggle: '', videoUrl: '' },
     education: '',
     experience: '',
     skills: [] as string[],
@@ -311,7 +311,7 @@ export default function ResumeBuilder() {
                          <h4 className="text-[10px] font-black text-foreground uppercase tracking-wider flex items-center gap-2">
                            <span>🌐</span> Portfolio Links
                          </h4>
-                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                             <input 
                               value={resumeData.personal.github}
                               onChange={(e) => handleInputChange('personal', 'github', e.target.value)}
@@ -329,6 +329,12 @@ export default function ResumeBuilder() {
                               onChange={(e) => handleInputChange('personal', 'kaggle', e.target.value)}
                               className="w-full p-2 bg-background border border-border/40 rounded outline-none focus:ring-1 focus:ring-primary text-xs" 
                               placeholder="kaggle.com/..." 
+                            />
+                            <input 
+                              value={resumeData.personal.videoUrl}
+                              onChange={(e) => handleInputChange('personal', 'videoUrl', e.target.value)}
+                              className="w-full p-2 bg-emerald-50/50 border border-emerald-500/30 rounded outline-none focus:ring-1 focus:ring-emerald-500 text-xs placeholder:text-emerald-700/40" 
+                              placeholder="Video Resume URL (Loom/YT)" 
                             />
                          </div>
                       </div>
@@ -472,6 +478,9 @@ export default function ResumeBuilder() {
                        )}
                        {resumeData.personal.kaggle && (
                          <a href={resumeData.personal.kaggle.startsWith('http') ? resumeData.personal.kaggle : `https://${resumeData.personal.kaggle}`} target="_blank" rel="noopener noreferrer" className="px-2 py-1 bg-cyan-50 text-cyan-700 border border-cyan-200 shadow-sm rounded flex items-center gap-1 hover:bg-cyan-100 transition-colors"><span>K</span> Kaggle</a>
+                       )}
+                       {resumeData.personal.videoUrl && (
+                         <a href={resumeData.personal.videoUrl.startsWith('http') ? resumeData.personal.videoUrl : `https://${resumeData.personal.videoUrl}`} target="_blank" rel="noopener noreferrer" className="px-2 py-1 bg-emerald-500 text-white shadow-sm rounded flex items-center gap-1 hover:bg-emerald-600 transition-colors animate-pulse"><span>▶</span> Play Video Resume</a>
                        )}
                     </div>
                   </div>
