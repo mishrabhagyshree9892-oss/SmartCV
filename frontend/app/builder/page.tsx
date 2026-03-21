@@ -46,20 +46,7 @@ export default function ResumeBuilder() {
   };
   const styles = getLayoutStyles();
 
-  const handleDirectDownload = async () => {
-     if (!componentRef.current) return;
-     const html2pdf = (await import('html2pdf.js')).default;
-     const element = componentRef.current;
-     const fileName = user?.fullName ? `${user.fullName}_SmartCV.pdf` : 'SmartCV_Resume.pdf';
-     const opt = {
-       margin: 10,
-       filename: fileName,
-       image: { type: 'jpeg', quality: 0.98 },
-       html2canvas: { scale: 2, useCORS: true },
-       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-     };
-     html2pdf().set(opt).from(element).save();
-  };
+
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
