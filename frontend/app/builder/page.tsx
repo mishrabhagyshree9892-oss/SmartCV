@@ -5,6 +5,8 @@ import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useReactToPrint } from 'react-to-print';
 import { useRef } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
+import CryptoJS from 'crypto-js';
 
 export default function ResumeBuilder() {
   const searchParams = useSearchParams();
@@ -83,6 +85,16 @@ export default function ResumeBuilder() {
 
   const [userRole, setUserRole] = useState('Professional');
   const [documentType, setDocumentType] = useState('Resume'); // 'Resume' or 'CV'
+  const [privacy, setPrivacy] = useState({ hideEmail: false, hidePhone: false });
+  const [cvHash, setCvHash] = useState<string | null>(null);
+
+  // Compute Blockchain Hash dynamically when data changes
+  useEffect(() => {
+    if (generatedResume) {
+       const rawString = JSON.stringify(generatedResume) + JSON.stringify(resumeData) + JSON.stringify(privacy);
+       setCvHash(CryptoJS.SHA256(rawString).toString());
+    }
+  }, [generatedResume, resumeData, privacy]);
 
   // ... (keeping effect hooks unchanged) ...
   useEffect(() => {
@@ -152,7 +164,7 @@ export default function ResumeBuilder() {
         Achv: ${resumeData.achievements}
         JD: ${resumeData.targetJd}
         
-        CRITICAL: Generate a ${documentType === 'CV' ? 'detailed, comprehensive academic/professional CV (can span multiple pages). Include extensive detail on projects, research, tools, and achievements.' : 'very brief, ATS-optimized 1-page resume.'} Output ONLY the necessary JSON fields (professional_summary, skills array, work_experience array, projects array, education array (include degree, institution, duration objects), keyword_match_score, recommended_template). ${documentType === 'Resume' ? 'Keep descriptions under 2 sentences.' : 'Expand bullet points with deep technical context.'} No conversational text.
+        CRITICAL: Generate a ${documentType === 'CV' ? 'detailed, comprehensive academic/professional CV (can span multiple pages). Include extensive detail on projects, research, tools, and achievements.' : 'very brief, ATS-optimized 1-page resume.'} Output ONLY the necessary JSON fields (professional_summary, skills array, work_experience array, projects array, education array (include degree, institution, duration objects), keyword_match_score, missing_keywords_for_jd array (strings)). ${documentType === 'Resume' ? 'Keep descriptions under 2 sentences.' : 'Expand bullet points with deep technical context.'} No conversational text.
       `;
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/agents/resume`, {
@@ -385,15 +397,33 @@ export default function ResumeBuilder() {
             </div>
           ))}
 
-          <div className="pt-6">
-             <h3 className="font-bold text-foreground mb-3 text-sm">Target JD (Optional but Recommended)</h3>
-             <div className="bg-card/80 backdrop-blur-[12px] p-5 rounded-xl border border-border/60 shadow-sm">
-                <textarea 
-                  value={resumeData.targetJd}
-                  onChange={(e) => handleInputChange('targetJd', '', e.target.value)}
-                  className="w-full h-24 p-4 bg-background/60 border border-border/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 resize-none text-xs"
-                  placeholder="Paste the job description you are targeting..."
-                />
+          <div className="pt-6 border-t border-border/40 mt-6 space-y-6">
+             {/* Target JD */}
+             <div>
+               <h3 className="font-bold text-foreground mb-3 text-sm flex items-center gap-2"><span>🎯</span> Target JD (Optional)</h3>
+               <div className="bg-card/80 backdrop-blur-[12px] p-5 rounded-xl border border-border/60 shadow-sm">
+                  <textarea 
+                    value={resumeData.targetJd}
+                    onChange={(e) => handleInputChange('targetJd', '', e.target.value)}
+                    className="w-full h-24 p-4 bg-background/60 border border-border/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 resize-none text-xs"
+                    placeholder="Paste the job description you are targeting..."
+                  />
+               </div>
+             </div>
+
+             {/* Privacy Filters */}
+             <div>
+               <h3 className="font-bold text-foreground mb-3 text-sm flex items-center gap-2"><span>🔐</span> Privacy Settings</h3>
+               <div className="bg-card/80 backdrop-blur-[12px] p-5 rounded-xl border border-border/60 shadow-sm flex flex-wrap items-center gap-6">
+                  <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+                     <input type="checkbox" checked={privacy.hideEmail} onChange={(e) => setPrivacy(p => ({ ...p, hideEmail: e.target.checked }))} className="accent-primary w-4 h-4 cursor-pointer" />
+                     Mask Email from Recruiters
+                  </label>
+                  <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+                     <input type="checkbox" checked={privacy.hidePhone} onChange={(e) => setPrivacy(p => ({ ...p, hidePhone: e.target.checked }))} className="accent-primary w-4 h-4 cursor-pointer" />
+                     Mask Phone from Recruiters
+                  </label>
+               </div>
              </div>
           </div>
         </div>
@@ -421,10 +451,10 @@ export default function ResumeBuilder() {
                   <div className={styles.header}>
                     <h2 className={`${styles.name} ${resumeData.personal.photo ? 'pr-28' : ''}`}>{resumeData.personal.fullName || user?.displayName || 'YOUR NAME'}</h2>
                     <div className={`flex flex-wrap gap-x-4 gap-y-2 text-[10px] font-bold text-zinc-500 uppercase tracking-wider mt-2 ${resumeData.personal.photo ? 'pr-28' : ''}`}>
-                      {resumeData.personal.email && (
+                      {resumeData.personal.email && !privacy.hideEmail && (
                         <span><a href={`mailto:${resumeData.personal.email}`} className="hover:text-primary transition-colors">{resumeData.personal.email}</a></span>
                       )}
-                      {resumeData.personal.phone && (
+                      {resumeData.personal.phone && !privacy.hidePhone && (
                         <><span>•</span><span>{resumeData.personal.phone}</span></>
                       )}
                     </div>
@@ -520,15 +550,37 @@ export default function ResumeBuilder() {
                     ))}
                   </div>
 
-                  {/* Footer Analytics */}
-                  <div className="mt-8 pt-6 border-t border-zinc-100 flex items-center justify-between">
-                     <div className="space-y-1">
-                        <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">ATS Match Score</p>
-                        <p className="text-xl font-black text-primary italic">{generatedResume.keyword_match_score}%</p>
+                  {/* Footer Analytics + Blockchain Verification */}
+                  <div className="mt-8 pt-6 border-t border-zinc-100 flex justify-between items-end gap-6">
+                     <div className="flex items-center gap-4 shrink-0">
+                        {cvHash && (
+                          <div className="p-1.5 bg-white border border-zinc-200 rounded-lg shadow-sm">
+                            <QRCodeSVG value={`https://smartcv.app/verify/${cvHash}`} size={40} />
+                          </div>
+                        )}
+                        <div className="space-y-1">
+                           <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-1">
+                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5H5a2 2 0 0 0 0 4h14"/></svg> 
+                             Blockchain Verified
+                           </p>
+                           <p className="text-[7px] font-mono text-zinc-500 w-32 truncate" title={cvHash || ''}>{cvHash}</p>
+                        </div>
                      </div>
-                     <div className="text-right space-y-1">
-                        <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">Template Suggestion</p>
-                        <p className="text-[10px] font-bold text-zinc-800">{generatedResume.recommended_template}</p>
+                     <div className="flex-1 flex flex-col items-end gap-3 text-right">
+                        <div className="space-y-1">
+                           <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">ATS Match Score</p>
+                           <p className="text-xl font-black text-primary italic">{generatedResume.keyword_match_score || 0}%</p>
+                        </div>
+                        {generatedResume.missing_keywords_for_jd && generatedResume.missing_keywords_for_jd.length > 0 && (
+                          <div className="space-y-1 w-full max-w-[200px]">
+                             <p className="text-[8px] font-bold text-rose-500 uppercase tracking-widest text-right">Missing JD Keywords</p>
+                             <div className="flex flex-wrap gap-1 justify-end">
+                               {generatedResume.missing_keywords_for_jd.map((kw: string, i: number) => (
+                                 <span key={i} className="text-[7px] px-1.5 py-0.5 bg-rose-50 text-rose-600 border border-rose-100 rounded font-semibold">{kw}</span>
+                               ))}
+                             </div>
+                          </div>
+                        )}
                      </div>
                   </div>
                 </div>
