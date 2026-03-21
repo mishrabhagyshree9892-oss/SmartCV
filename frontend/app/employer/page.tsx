@@ -18,6 +18,27 @@ export default function EmployerPortal() {
       </div>
 
       <div className="flex-1 flex flex-col gap-5">
+        
+        {/* Recruiter Analytics Dashboard */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-2">
+           <div className="bg-white border border-border/60 p-5 rounded-2xl shadow-sm">
+              <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase mb-1">Total Candidates</p>
+              <h2 className="text-3xl font-black text-foreground">4,201</h2>
+           </div>
+           <div className="bg-white border border-border/60 p-5 rounded-2xl shadow-sm">
+              <p className="text-[10px] font-bold tracking-widest text-emerald-600 uppercase mb-1">Verified Profiles</p>
+              <h2 className="text-3xl font-black text-emerald-700">3,890</h2>
+           </div>
+           <div className="bg-white border border-border/60 p-5 rounded-2xl shadow-sm">
+              <p className="text-[10px] font-bold tracking-widest text-blue-600 uppercase mb-1">Your Shortlist</p>
+              <h2 className="text-3xl font-black text-blue-700">14</h2>
+           </div>
+           <div className="bg-white border border-border/60 p-5 rounded-2xl shadow-sm">
+              <p className="text-[10px] font-bold tracking-widest text-purple-600 uppercase mb-1">Avg ATS Score</p>
+              <h2 className="text-3xl font-black text-purple-700">88%</h2>
+           </div>
+        </div>
+
         {/* Search Bar Card */}
         <div className="bg-card/80 backdrop-blur-[16px] border border-border/60 p-5 rounded-2xl shadow-sm flex items-center gap-4">
           <div className="flex-1 relative group">
@@ -54,10 +75,10 @@ export default function EmployerPortal() {
         <div className="bg-card/80 backdrop-blur-[16px] border border-border/60 p-6 rounded-[2.5rem] shadow-sm flex-1 flex flex-col min-h-[450px]">
            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
              {[
-               { name: 'Sarah Jenkins', role: 'Executive Chef', score: 98, verified: true, email: 'sarah.chef@example.com', link: 'https://sarahcooks.com', skills: ['Culinary Management', 'Menu Design', 'French Cuisine'] },
-               { name: 'David Chen', role: 'Senior React Developer', score: 96, verified: true, email: 'david.dev@example.com', link: 'https://davidcodes.io', skills: ['React', 'Next.js', 'System Architecture'] },
-               { name: 'Maria Garcia', role: 'High School Physics Teacher', score: 99, verified: true, email: 'maria.teach@example.com', link: 'https://mariateaches.edu', skills: ['Curriculum Dev', 'Classroom Mgmt', 'STEM'] },
-               { name: 'James Wilson', role: 'Financial Analyst', score: 94, verified: false, email: 'james.finance@example.com', link: 'https://jamesinvests.com', skills: ['Financial Modeling', 'Excel', 'Data Analysis'] }
+               { name: 'Sarah Jenkins', role: 'Executive Chef', score: 98, verified: true, email: 'sarah.chef@example.com', link: 'https://sarahcooks.com', skills: ['Culinary Management', 'Menu Design', 'French Cuisine'], github: '', hash: '0x8f2a...9b1c' },
+               { name: 'David Chen', role: 'Senior React Developer', score: 96, verified: true, email: 'david.dev@hidden.com', link: 'https://davidcodes.io', skills: ['React', 'Next.js', 'System Architecture'], github: 'github.com/davidc', hash: '0x1c9d...2a4f' },
+               { name: 'Maria Garcia', role: 'High School Physics Teacher', score: 99, verified: true, email: 'maria.teach@example.com', link: 'https://mariateaches.edu', skills: ['Curriculum Dev', 'Classroom Mgmt', 'STEM'], github: '', hash: '0xa412...3e8b' },
+               { name: 'James Wilson', role: 'Financial Analyst', score: 94, verified: false, email: 'james.finance@example.com', link: 'https://jamesinvests.com', skills: ['Financial Modeling', 'Excel', 'Data Analysis'], github: '', hash: null }
              ].map((candidate, i) => (
                <div key={i} className="bg-white border border-border/40 p-5 rounded-3xl shadow-sm hover:shadow-lg transition-all flex flex-col gap-4">
                  <div className="flex justify-between items-start">
@@ -73,8 +94,14 @@ export default function EmployerPortal() {
                  <div className="space-y-2 text-xs font-medium text-muted-foreground flex-1">
                    <div className="flex items-center gap-2">
                      <span className="opacity-50">📧</span>
-                     <a href={`mailto:${candidate.email}`} className="hover:text-primary transition-colors text-zinc-600">{candidate.email}</a>
+                     <a href={`mailto:${candidate.email}`} className="hover:text-primary transition-colors text-zinc-600">{candidate.email.includes('hidden') ? '(Hidden by privacy filter)' : candidate.email}</a>
                    </div>
+                   {candidate.github && (
+                     <div className="flex items-center gap-2">
+                       <span className="opacity-50">⌨</span>
+                       <a href={`https://${candidate.github}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors text-zinc-600">{candidate.github}</a>
+                     </div>
+                   )}
                    <div className="flex items-center gap-2">
                      <span className="opacity-50">🔗</span>
                      <a href={candidate.link} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors text-zinc-600">{candidate.link.replace('https://', '')}</a>
@@ -88,12 +115,20 @@ export default function EmployerPortal() {
                  </div>
                  
                  <div className="flex justify-between items-center pt-4 border-t border-border/40 mt-auto">
-                   {candidate.verified ? (
-                     <span className="flex items-center gap-1.5 text-[9px] font-black text-emerald-500 uppercase tracking-widest"><div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"/> Verified</span>
-                   ) : (
-                     <span className="flex items-center gap-1.5 text-[9px] font-black text-amber-500 uppercase tracking-widest"><div className="w-1.5 h-1.5 bg-amber-500 rounded-full"/> Pending</span>
-                   )}
-                   <button className="text-[10px] font-bold text-primary hover:underline">View Verified CV →</button>
+                   <div className="flex flex-col gap-1">
+                     {candidate.verified ? (
+                       <span className="flex items-center gap-1.5 text-[9px] font-black text-emerald-500 uppercase tracking-widest" title="DigiLocker Verified"><div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"/> Verified Docs</span>
+                     ) : (
+                       <span className="flex items-center gap-1.5 text-[9px] font-black text-amber-500 uppercase tracking-widest"><div className="w-1.5 h-1.5 bg-amber-500 rounded-full"/> Pending ID</span>
+                     )}
+                     {candidate.hash && (
+                       <span className="flex items-center gap-1.5 text-[8px] font-mono font-bold text-zinc-400" title="Blockchain Resume Hash">🔗 {candidate.hash}</span>
+                     )}
+                   </div>
+                   <div className="flex items-center gap-2">
+                     <button className="text-[10px] font-bold text-primary hover:underline px-3 py-1.5 bg-primary/10 rounded-full">★ Shortlist</button>
+                     <button className="text-[10px] font-bold bg-zinc-900 text-white px-3 py-1.5 rounded-full hover:bg-zinc-800 transition-colors">View CV</button>
+                   </div>
                  </div>
                </div>
              ))}
