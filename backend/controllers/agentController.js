@@ -34,14 +34,22 @@ const callLyzrAgent = async (agentId, userId, message, sessionId) => {
     // Parse it and extract the nested `result` object
     if (rawData.response && typeof rawData.response === 'string') {
       try {
-        const parsed = JSON.parse(rawData.response);
+        let cleanText = rawData.response;
+        // Search for markdown JSON block
+        const mdMatch = cleanText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (mdMatch) {
+          cleanText = mdMatch[1];
+        }
+        cleanText = cleanText.trim();
+        
+        const parsed = JSON.parse(cleanText);
         // Extract .result if it exists, otherwise return the parsed object directly
         const result = parsed.result || parsed;
         console.log(`[Lyzr] Parsed result keys:`, Object.keys(result));
         return { result };
       } catch (parseErr) {
         // If it's not JSON, return as plain text response
-        console.log(`[Lyzr] Response is plain text, returning as-is`);
+        console.log(`[Lyzr] Response is plain text, returning as-is. Error:`, parseErr.message);
         return { response: rawData.response };
       }
     }

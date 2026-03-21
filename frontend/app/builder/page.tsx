@@ -149,6 +149,7 @@ export default function ResumeBuilder() {
       });
       const data = await response.json();
       const parsedResult = data.result || data.data?.module_outputs || (data.data && Object.keys(data.data).length > 0 ? data.data : null) || data;
+      console.log('Parsed Resume Data:', parsedResult);
       if (parsedResult) {
         setGeneratedResume(parsedResult);
       }
