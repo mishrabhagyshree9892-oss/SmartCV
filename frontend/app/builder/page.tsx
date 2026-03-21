@@ -74,16 +74,16 @@ export default function ResumeBuilder() {
     setGenerating(true);
     try {
       const message = `
-        User Profession/Target Role: ${userRole}
-        Personal Info: ${JSON.stringify(resumeData.personal)}
-        Education: ${resumeData.education}
+        Role: ${userRole}
+        Info: ${JSON.stringify(resumeData.personal)}
+        Edu: ${resumeData.education}
         Skills: ${resumeData.skills.join(', ')}
-        Experience: ${resumeData.experience}
-        Projects: ${resumeData.projects}
-        Achievements: ${resumeData.achievements}
-        Target JD: ${resumeData.targetJd}
+        Exp: ${resumeData.experience}
+        Proj: ${resumeData.projects}
+        Achv: ${resumeData.achievements}
+        JD: ${resumeData.targetJd}
         
-        IMPORTANT: Generate the resume strictly matching the style, terminology, and expectations of the "${userRole}" profession. If they are a Chef, focus on culinary achievements. If they are a Teacher, focus on pedagogy, etc. Do not assume they are software engineers. Ensure all email addresses use mailto: links in generated output if applicable, and all URLs use absolute hrefs.
+        CRITICAL: Generate a very brief, ATS-optimized resume in valid JSON. Be extremely fast. Output ONLY the necessary JSON fields (professional_summary, skills array, work_experience array, projects array, keyword_match_score, recommended_template). Keep descriptions under 2 sentences. No conversational text.
       `;
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/agents/resume`, {

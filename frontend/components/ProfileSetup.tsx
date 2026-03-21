@@ -20,6 +20,7 @@ export default function ProfileSetup({ onComplete }: { onComplete: () => void })
     try {
       await setDoc(doc(db, 'users', auth.currentUser.uid), {
         ...formData,
+        jobRole: formData.jobTitle, // Ensure both are saved or map it
         email: auth.currentUser.email,
         updatedAt: new Date(),
         profileCompleted: true
@@ -58,7 +59,7 @@ export default function ProfileSetup({ onComplete }: { onComplete: () => void })
               <input 
                 required
                 type="text" 
-                placeholder="Software Engineer"
+                placeholder="e.g., Senior Designer, Chef, Data Analyst"
                 value={formData.jobTitle}
                 onChange={(e) => setFormData({...formData, jobTitle: e.target.value})}
                 className="w-full p-3 bg-muted/50 border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all text-sm"

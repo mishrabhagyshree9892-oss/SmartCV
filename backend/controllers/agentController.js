@@ -11,19 +11,20 @@ const agents = {
 };
 
 const callLyzrAgent = async (agentId, userId, message, sessionId) => {
-  console.log(`[Lyzr] Calling Agent ${agentId} for User ${userId}...`);
+  const optimizedMessage = message + "\n\nCRITICAL: Respond as fast as possible. Be extremely concise. Give only the exact requested output without any extra conversational filler.";
+  
   try {
     const response = await axios.post(LYZR_API_URL, {
       user_id: userId,
       agent_id: agentId,
       session_id: sessionId || `${agentId}-${Date.now()}`,
-      message: message
+      message: optimizedMessage
     }, {
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': process.env.LYZR_API_KEY
       },
-      timeout: 60000 // 60 seconds
+      timeout: 30000 // Reduced timeout to 30 seconds to fail fast
     });
 
     const rawData = response.data;
