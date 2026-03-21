@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { useReactToPrint } from 'react-to-print';
 import { useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -95,6 +96,62 @@ export default function ResumeBuilder() {
        setCvHash(CryptoJS.SHA256(rawString).toString());
     }
   }, [generatedResume, resumeData, privacy]);
+
+  const [savingAction, setSavingAction] = useState(false);
+
+  const handleSaveToHub = async () => {
+    if (!user) {
+      alert("Please login to save your profile to the Candidate Hub.");
+      return;
+    }
+    if (!generatedResume) return;
+
+    setSavingAction(true);
+    try {
+      // Check if user already has a saved profile 
+      const q = query(collection(db, 'resumes'), where("userId", "==", user.uid));
+      const snapshot = await getDocs(q);
+      
+      const profileData = {
+         userId: user.uid,
+         email: user.email || resumeData.personal.email,
+         fullName: resumeData.personal.fullName || user.displayName || 'Anonymous Candidate',
+         role: generatedResume.professional_summary?.substring(0, 50) + "..." || "Candidate",
+         score: generatedResume.keyword_match_score || 0,
+         verified: resumeData.digilockerVerified,
+         link: resumeData.personal.linkedin || '',
+         github: resumeData.personal.github || '',
+         videoUrl: resumeData.personal.videoUrl || '',
+         hash: cvHash || '',
+         skills: generatedResume.skills || resumeData.skills || [],
+         privacy: privacy,
+         resumeData: resumeData,
+         generatedResume: generatedResume,
+         updatedAt: serverTimestamp(),
+      };
+
+      if (!snapshot.empty) {
+         // Update existing profile
+         const docId = snapshot.docs[0].id;
+         await updateDoc(doc(db, 'resumes', docId), profileData);
+      } else {
+         // Create new profile with base analytics
+         await addDoc(collection(db, 'resumes'), {
+            ...profileData,
+            views: 0,
+            downloads: 0,
+            searchAppearances: 0,
+            createdAt: serverTimestamp(),
+         });
+      }
+      alert("✅ Successfully updated to your Candidate Hub Profile!");
+    } catch (err: any) {
+      console.error("Firestore Save Error:", err);
+      alert("Failed to save profile. Is Firebase setup properly?");
+    } finally {
+      setSavingAction(false);
+    }
+  };
 
   // ... (keeping effect hooks unchanged) ...
   useEffect(() => {
@@ -602,6 +659,15 @@ export default function ResumeBuilder() {
                  🖨️ Download or Print PDF
                </button>
                <p className="text-[10px] text-center text-muted-foreground mt-2 font-medium">Use 'Save as PDF' in the destination dropdown for best formatting.</p>
+               
+               <button 
+                 onClick={handleSaveToHub} 
+                 disabled={savingAction || !user}
+                 className="w-full mt-4 py-4 bg-zinc-900 border border-zinc-700 text-white font-bold rounded-2xl shadow-xl hover:bg-black transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+               >
+                 {savingAction ? <span className="animate-pulse">Saving to Hub...</span> : '💾 Save & Publish to Candidate Hub'}
+               </button>
+               {!user && <p className="text-[10px] text-center text-rose-500 mt-2 font-bold">You must be logged in to publish.</p>}
              </div>
            )}
         </div>

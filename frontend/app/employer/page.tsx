@@ -1,8 +1,35 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { db } from '@/lib/firebase';
+import { collection, getDocs, updateDoc, doc, increment } from 'firebase/firestore';
 
 export default function EmployerPortal() {
   const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [candidates, setCandidates] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+     const fetchCandidates = async () => {
+        try {
+           const snapshot = await getDocs(collection(db, 'resumes'));
+           const loaded = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+           setCandidates(loaded);
+        } catch (e) {
+           console.error("Failed to fetch candidates:", e);
+        } finally {
+           setLoading(false);
+        }
+     };
+     fetchCandidates();
+  }, []);
+
+  const handleShortlist = async (id: string, currentShortlists: number = 0) => {
+      // Demo logic for tracking shortlists.
+      alert('Candidate shortlisted! (demo)');
+  };
+
+  const activeCandidates = verifiedOnly ? candidates.filter(c => c.verified) : candidates;
+  const avgScore = candidates.length > 0 ? Math.round(candidates.reduce((acc, c) => acc + (c.score || 0), 0) / candidates.length) : 0;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700 max-w-[1240px] mx-auto w-full flex flex-col min-h-full">
@@ -23,19 +50,19 @@ export default function EmployerPortal() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-2">
            <div className="bg-white border border-border/60 p-5 rounded-2xl shadow-sm">
               <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase mb-1">Total Candidates</p>
-              <h2 className="text-3xl font-black text-foreground">4,201</h2>
+              <h2 className="text-3xl font-black text-foreground">{loading ? '-' : candidates.length}</h2>
            </div>
            <div className="bg-white border border-border/60 p-5 rounded-2xl shadow-sm">
               <p className="text-[10px] font-bold tracking-widest text-emerald-600 uppercase mb-1">Verified Profiles</p>
-              <h2 className="text-3xl font-black text-emerald-700">3,890</h2>
+              <h2 className="text-3xl font-black text-emerald-700">{loading ? '-' : candidates.filter(c => c.verified).length}</h2>
            </div>
            <div className="bg-white border border-border/60 p-5 rounded-2xl shadow-sm">
               <p className="text-[10px] font-bold tracking-widest text-blue-600 uppercase mb-1">Your Shortlist</p>
-              <h2 className="text-3xl font-black text-blue-700">14</h2>
+              <h2 className="text-3xl font-black text-blue-700">0</h2>
            </div>
            <div className="bg-white border border-border/60 p-5 rounded-2xl shadow-sm">
               <p className="text-[10px] font-bold tracking-widest text-purple-600 uppercase mb-1">Avg ATS Score</p>
-              <h2 className="text-3xl font-black text-purple-700">88%</h2>
+              <h2 className="text-3xl font-black text-purple-700">{loading ? '-' : `${avgScore}%`}</h2>
            </div>
         </div>
 
@@ -87,73 +114,85 @@ export default function EmployerPortal() {
           </div>
         </div>
 
-        {/* Content Card with Generic Professions */}
+        {/* Content Card */}
         <div className="bg-card/80 backdrop-blur-[16px] border border-border/60 p-6 rounded-[2.5rem] shadow-sm flex-1 flex flex-col min-h-[450px]">
-           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-             {[
-               { name: 'Sarah Jenkins', role: 'Executive Chef', score: 98, verified: true, email: 'sarah.chef@example.com', link: 'https://sarahcooks.com', skills: ['Culinary Management', 'Menu Design', 'French Cuisine'], github: '', hash: '0x8f2a...9b1c', videoUrl: '' },
-               { name: 'David Chen', role: 'Senior React Developer', score: 96, verified: true, email: 'david.dev@hidden.com', link: 'https://davidcodes.io', skills: ['React', 'Next.js', 'System Architecture'], github: 'github.com/davidc', hash: '0x1c9d...2a4f', videoUrl: '' },
-               { name: 'Maria Garcia', role: 'High School Physics Teacher', score: 99, verified: true, email: 'maria.teach@example.com', link: 'https://mariateaches.edu', skills: ['Curriculum Dev', 'Classroom Mgmt', 'STEM'], github: '', hash: '0xa412...3e8b', videoUrl: 'https://youtube.com/watch?v=mock' },
-               { name: 'James Wilson', role: 'Financial Analyst', score: 94, verified: false, email: 'james.finance@example.com', link: 'https://jamesinvests.com', skills: ['Financial Modeling', 'Excel', 'Data Analysis'], github: '', hash: null, videoUrl: '' }
-             ].map((candidate, i) => (
-               <div key={i} className="bg-white border border-border/40 p-5 rounded-3xl shadow-sm hover:shadow-lg transition-all flex flex-col gap-4">
-                 <div className="flex justify-between items-start">
-                   <div>
-                     <h3 className="font-bold text-foreground text-lg">{candidate.name}</h3>
-                     <p className="text-primary font-bold text-xs">{candidate.role}</p>
-                   </div>
-                   <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-xs font-bold border border-emerald-100">
-                     <span>{candidate.score}% Match</span>
-                   </div>
-                 </div>
-                 
-                 <div className="space-y-2 text-xs font-medium text-muted-foreground flex-1">
-                   <div className="flex items-center gap-2">
-                     <span className="opacity-50">📧</span>
-                     <a href={`mailto:${candidate.email}`} className="hover:text-primary transition-colors text-zinc-600">{candidate.email.includes('hidden') ? '(Hidden by privacy filter)' : candidate.email}</a>
-                   </div>
-                   {candidate.github && (
-                     <div className="flex items-center gap-2">
-                       <span className="opacity-50">⌨</span>
-                       <a href={`https://${candidate.github}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors text-zinc-600">{candidate.github}</a>
+           {loading ? (
+             <div className="flex-1 flex items-center justify-center text-muted-foreground font-bold animate-pulse">
+                Loading live candidates from Firebase...
+             </div>
+           ) : activeCandidates.length === 0 ? (
+             <div className="flex-1 flex items-center justify-center text-muted-foreground font-medium">
+                No published candidates found match the criteria.
+             </div>
+           ) : (
+             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+               {activeCandidates.map((candidate, i) => (
+                 <div key={i} className="bg-white border border-border/40 p-5 rounded-3xl shadow-sm hover:shadow-lg transition-all flex flex-col gap-4">
+                   <div className="flex justify-between items-start">
+                     <div>
+                       <h3 className="font-bold text-foreground text-lg">{candidate.fullName}</h3>
+                       <p className="text-primary font-bold text-xs">{candidate.role}</p>
                      </div>
-                   )}
-                   <div className="flex items-center gap-2">
-                     <span className="opacity-50">🔗</span>
-                     <a href={candidate.link} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors text-zinc-600">{candidate.link.replace('https://', '')}</a>
+                     <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-xs font-bold border border-emerald-100">
+                       <span>{candidate.score || 0}% Match</span>
+                     </div>
                    </div>
-                 </div>
+                   
+                   <div className="space-y-2 text-xs font-medium text-muted-foreground flex-1">
+                     {candidate.email && (
+                       <div className="flex items-center gap-2">
+                         <span className="opacity-50">📧</span>
+                         <a href={`mailto:${candidate.email}`} className="hover:text-primary transition-colors text-zinc-600">{candidate.privacy?.hideEmail ? '(Hidden by privacy filter)' : candidate.email}</a>
+                       </div>
+                     )}
+                     {candidate.github && (
+                       <div className="flex items-center gap-2">
+                         <span className="opacity-50">⌨</span>
+                         <a href={candidate.github.startsWith('http') ? candidate.github : `https://${candidate.github}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors text-zinc-600">{candidate.github}</a>
+                       </div>
+                     )}
+                     {candidate.link && (
+                       <div className="flex items-center gap-2">
+                         <span className="opacity-50">🔗</span>
+                         <a href={candidate.link.startsWith('http') ? candidate.link : `https://${candidate.link}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors text-zinc-600">{candidate.link.replace('https://', '')}</a>
+                       </div>
+                     )}
+                   </div>
 
-                 <div className="flex flex-wrap gap-1.5">
-                   {candidate.skills.map(s => (
-                     <span key={s} className="px-2 py-1 bg-zinc-100 text-[9px] font-bold text-zinc-600 rounded-md">{s}</span>
-                   ))}
-                 </div>
-                 
-                 <div className="flex justify-between items-center pt-4 border-t border-border/40 mt-auto">
-                   <div className="flex flex-col gap-1">
-                     {candidate.verified ? (
-                       <span className="flex items-center gap-1.5 text-[9px] font-black text-emerald-500 uppercase tracking-widest" title="DigiLocker Verified"><div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"/> Verified Docs</span>
-                     ) : (
-                       <span className="flex items-center gap-1.5 text-[9px] font-black text-amber-500 uppercase tracking-widest"><div className="w-1.5 h-1.5 bg-amber-500 rounded-full"/> Pending ID</span>
-                     )}
-                     {candidate.hash && (
-                       <span className="flex items-center gap-1.5 text-[8px] font-mono font-bold text-zinc-400" title="Blockchain Resume Hash">🔗 {candidate.hash}</span>
+                   <div className="flex flex-wrap gap-1.5">
+                     {candidate.skills?.slice(0, 5).map((s: string) => (
+                       <span key={s} className="px-2 py-1 bg-zinc-100 text-[9px] font-bold text-zinc-600 rounded-md truncate max-w-[100px]">{s}</span>
+                     ))}
+                     {candidate.skills && candidate.skills.length > 5 && (
+                        <span className="px-2 py-1 bg-zinc-100 text-[9px] font-bold text-zinc-400 rounded-md">+{candidate.skills.length - 5}</span>
                      )}
                    </div>
-                   <div className="flex items-center gap-2">
-                     {candidate.videoUrl && (
-                        <a href={candidate.videoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full hover:bg-emerald-200 transition-colors" title="Watch Video Resume">
-                          ▶
-                        </a>
-                     )}
-                     <button className="text-[10px] font-bold text-primary hover:underline px-3 py-1.5 bg-primary/10 rounded-full">★ Shortlist</button>
-                     <button className="text-[10px] font-bold bg-zinc-900 text-white px-3 py-1.5 rounded-full hover:bg-zinc-800 transition-colors">View CV</button>
+                   
+                   <div className="flex justify-between items-center pt-4 border-t border-border/40 mt-auto">
+                     <div className="flex flex-col gap-1">
+                       {candidate.verified ? (
+                         <span className="flex items-center gap-1.5 text-[9px] font-black text-emerald-500 uppercase tracking-widest" title="DigiLocker Verified"><div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"/> Verified Docs</span>
+                       ) : (
+                         <span className="flex items-center gap-1.5 text-[9px] font-black text-amber-500 uppercase tracking-widest"><div className="w-1.5 h-1.5 bg-amber-500 rounded-full"/> Pending ID</span>
+                       )}
+                       {candidate.hash && (
+                         <span className="flex items-center gap-1.5 text-[8px] font-mono font-bold text-zinc-400" title="Blockchain Resume Hash">🔗 {candidate.hash.substring(0, 10)}...</span>
+                       )}
+                     </div>
+                     <div className="flex items-center gap-2">
+                       {candidate.videoUrl && (
+                          <a href={candidate.videoUrl.startsWith('http') ? candidate.videoUrl : `https://${candidate.videoUrl}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full hover:bg-emerald-200 transition-colors" title="Watch Video Resume">
+                            ▶
+                          </a>
+                       )}
+                       <button onClick={() => handleShortlist(candidate.id)} className="text-[10px] font-bold text-primary hover:underline px-3 py-1.5 bg-primary/10 rounded-full">★ Shortlist</button>
+                       <button className="text-[10px] font-bold bg-zinc-900 text-white px-3 py-1.5 rounded-full hover:bg-zinc-800 transition-colors">View CV</button>
+                     </div>
                    </div>
                  </div>
-               </div>
-             ))}
-           </div>
+               ))}
+             </div>
+           )}
         </div>
 
         <footer className="mt-8 flex justify-between items-center text-[10px] font-bold text-muted-foreground/30 uppercase tracking-widest pl-2 pr-2">
