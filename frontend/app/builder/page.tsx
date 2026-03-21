@@ -55,7 +55,7 @@ export default function ResumeBuilder() {
   
   // Resume Data State
   const [resumeData, setResumeData] = useState({
-    personal: { fullName: '', email: '', phone: '', linkedin: '', photo: '' },
+    personal: { fullName: '', email: '', phone: '', linkedin: '', photo: '', github: '', behance: '', kaggle: '' },
     education: '',
     experience: '',
     skills: [] as string[],
@@ -81,8 +81,8 @@ export default function ResumeBuilder() {
     }, 2000);
   };
 
-
   const [userRole, setUserRole] = useState('Professional');
+  const [documentType, setDocumentType] = useState('Resume'); // 'Resume' or 'CV'
 
   // ... (keeping effect hooks unchanged) ...
   useEffect(() => {
@@ -152,7 +152,7 @@ export default function ResumeBuilder() {
         Achv: ${resumeData.achievements}
         JD: ${resumeData.targetJd}
         
-        CRITICAL: Generate a very brief, ATS-optimized resume in valid JSON. Be extremely fast. Output ONLY the necessary JSON fields (professional_summary, skills array, work_experience array, projects array, education array (include degree, institution, duration objects), keyword_match_score, recommended_template). Keep descriptions under 2 sentences. No conversational text.
+        CRITICAL: Generate a ${documentType === 'CV' ? 'detailed, comprehensive academic/professional CV (can span multiple pages). Include extensive detail on projects, research, tools, and achievements.' : 'very brief, ATS-optimized 1-page resume.'} Output ONLY the necessary JSON fields (professional_summary, skills array, work_experience array, projects array, education array (include degree, institution, duration objects), keyword_match_score, recommended_template). ${documentType === 'Resume' ? 'Keep descriptions under 2 sentences.' : 'Expand bullet points with deep technical context.'} No conversational text.
       `;
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/agents/resume`, {
@@ -193,17 +193,30 @@ export default function ResumeBuilder() {
           <span>Uploaded: <strong>{uploadedFileName}</strong> — fill in any missing details below and click Generate.</span>
         </div>
       )}
-      <div className="mb-8 flex justify-between items-end">
+      <div className="mb-8 flex justify-between items-end border-b border-border/40 pb-5">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Resume Builder</h1>
-          <p className="text-muted-foreground font-medium text-sm">Generate ATS-optimized, blockchain-verified resumes</p>
+          <h1 className="text-3xl font-black text-foreground tracking-tight">Document Builder</h1>
+          <div className="flex items-center gap-3 mt-4">
+            <button 
+              onClick={() => setDocumentType('Resume')} 
+              className={`px-5 py-2 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all ${documentType === 'Resume' ? 'bg-zinc-900 text-white shadow-lg' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}
+            >
+              Resume (1-2 Pages)
+            </button>
+            <button 
+              onClick={() => setDocumentType('CV')} 
+              className={`px-5 py-2 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all ${documentType === 'CV' ? 'bg-zinc-900 text-white shadow-lg' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}
+            >
+              CV (Detailed 3+ Pages)
+            </button>
+          </div>
         </div>
         <button 
           onClick={handleGenerate}
           disabled={generating}
-          className="px-8 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-105 transition-all disabled:opacity-50"
+          className="px-8 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all disabled:opacity-50 flex items-center gap-2"
         >
-          {generating ? 'Generating...' : '✨ Generate AI Resume'}
+          {generating ? <span className="animate-pulse">Analyzing...</span> : `✨ Generate AI ${documentType}`}
         </button>
       </div>
 
@@ -279,6 +292,33 @@ export default function ResumeBuilder() {
                             placeholder="linkedin.com/in/..." 
                           />
                         </div>
+                      </div>
+                      
+                      {/* Sub-section: Portfolio Links */}
+                      <div className="pt-3 mt-3 border-t border-border/40 space-y-3">
+                         <h4 className="text-[10px] font-black text-foreground uppercase tracking-wider flex items-center gap-2">
+                           <span>🌐</span> Portfolio Links
+                         </h4>
+                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <input 
+                              value={resumeData.personal.github}
+                              onChange={(e) => handleInputChange('personal', 'github', e.target.value)}
+                              className="w-full p-2 bg-background border border-border/40 rounded outline-none focus:ring-1 focus:ring-primary text-xs" 
+                              placeholder="github.com/..." 
+                            />
+                            <input 
+                              value={resumeData.personal.behance}
+                              onChange={(e) => handleInputChange('personal', 'behance', e.target.value)}
+                              className="w-full p-2 bg-background border border-border/40 rounded outline-none focus:ring-1 focus:ring-primary text-xs" 
+                              placeholder="behance.net/..." 
+                            />
+                            <input 
+                              value={resumeData.personal.kaggle}
+                              onChange={(e) => handleInputChange('personal', 'kaggle', e.target.value)}
+                              className="w-full p-2 bg-background border border-border/40 rounded outline-none focus:ring-1 focus:ring-primary text-xs" 
+                              placeholder="kaggle.com/..." 
+                            />
+                         </div>
                       </div>
                     </div>
                   )}
@@ -380,16 +420,29 @@ export default function ResumeBuilder() {
                   {/* Header */}
                   <div className={styles.header}>
                     <h2 className={`${styles.name} ${resumeData.personal.photo ? 'pr-28' : ''}`}>{resumeData.personal.fullName || user?.displayName || 'YOUR NAME'}</h2>
-                    <div className={`flex flex-wrap gap-4 text-[10px] font-bold text-zinc-500 uppercase tracking-wider mt-2 ${resumeData.personal.photo ? 'pr-28' : ''}`}>
+                    <div className={`flex flex-wrap gap-x-4 gap-y-2 text-[10px] font-bold text-zinc-500 uppercase tracking-wider mt-2 ${resumeData.personal.photo ? 'pr-28' : ''}`}>
                       {resumeData.personal.email && (
                         <span><a href={`mailto:${resumeData.personal.email}`} className="hover:text-primary transition-colors">{resumeData.personal.email}</a></span>
                       )}
                       {resumeData.personal.phone && (
                         <><span>•</span><span>{resumeData.personal.phone}</span></>
                       )}
-                      {resumeData.personal.linkedin && (
-                        <><span>•</span><span><a href={resumeData.personal.linkedin.startsWith('http') ? resumeData.personal.linkedin : `https://${resumeData.personal.linkedin}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">LinkedIn</a></span></>
-                      )}
+                    </div>
+                    
+                    {/* Portfolio Links Render */}
+                    <div className={`flex flex-wrap gap-3 mt-3 text-[9px] font-bold tracking-wider ${resumeData.personal.photo ? 'pr-28' : ''}`}>
+                       {resumeData.personal.linkedin && (
+                         <a href={resumeData.personal.linkedin.startsWith('http') ? resumeData.personal.linkedin : `https://${resumeData.personal.linkedin}`} target="_blank" rel="noopener noreferrer" className="px-2 py-1 bg-blue-50 text-blue-700 border border-blue-200 shadow-sm rounded flex items-center gap-1 hover:bg-blue-100 transition-colors"><span>in</span> LinkedIn</a>
+                       )}
+                       {resumeData.personal.github && (
+                         <a href={resumeData.personal.github.startsWith('http') ? resumeData.personal.github : `https://${resumeData.personal.github}`} target="_blank" rel="noopener noreferrer" className="px-2 py-1 bg-zinc-100 text-zinc-800 border border-zinc-300 shadow-sm rounded flex items-center gap-1 hover:bg-zinc-200 transition-colors"><span>⌨</span> GitHub</a>
+                       )}
+                       {resumeData.personal.behance && (
+                         <a href={resumeData.personal.behance.startsWith('http') ? resumeData.personal.behance : `https://${resumeData.personal.behance}`} target="_blank" rel="noopener noreferrer" className="px-2 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-sm rounded flex items-center gap-1 hover:bg-indigo-100 transition-colors"><span>Bē</span> Behance</a>
+                       )}
+                       {resumeData.personal.kaggle && (
+                         <a href={resumeData.personal.kaggle.startsWith('http') ? resumeData.personal.kaggle : `https://${resumeData.personal.kaggle}`} target="_blank" rel="noopener noreferrer" className="px-2 py-1 bg-cyan-50 text-cyan-700 border border-cyan-200 shadow-sm rounded flex items-center gap-1 hover:bg-cyan-100 transition-colors"><span>K</span> Kaggle</a>
+                       )}
                     </div>
                   </div>
 
