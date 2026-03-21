@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { useReactToPrint } from 'react-to-print';
+import { useRef } from 'react';
 
 export default function ResumeBuilder() {
   const searchParams = useSearchParams();
@@ -11,8 +13,15 @@ export default function ResumeBuilder() {
   const [generating, setGenerating] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const componentRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = useReactToPrint({
+    contentRef: componentRef,
+    documentTitle: user?.fullName ? `${user.fullName}_SmartCV` : 'SmartCV_Resume',
+  });
   
   // Resume Data State
+
   const [resumeData, setResumeData] = useState({
     personal: { fullName: '', email: '', phone: '', linkedin: '' },
     education: '',
@@ -255,7 +264,7 @@ export default function ResumeBuilder() {
                   </div>
                 </div>
               ) : (
-                <div className="space-y-6 animate-in fade-in duration-1000">
+                <div ref={componentRef} className="space-y-6 animate-in fade-in duration-1000 p-8 bg-white print:p-4 print:shadow-none">
                   {/* Header */}
                   <div className="text-center border-b pb-6 border-zinc-100">
                     <h2 className="text-2xl font-black mb-1">{resumeData.personal.fullName || user?.displayName || 'YOUR NAME'}</h2>
@@ -343,7 +352,7 @@ export default function ResumeBuilder() {
            </div>
            
            {generatedResume && (
-             <button className="mt-4 w-full py-4 bg-emerald-500 text-white font-bold rounded-2xl shadow-xl shadow-emerald-200 hover:scale-105 transition-all flex items-center justify-center gap-2">
+             <button onClick={() => handlePrint()} className="mt-4 w-full py-4 bg-emerald-500 text-white font-bold rounded-2xl shadow-xl shadow-emerald-200 hover:scale-105 transition-all flex items-center justify-center gap-2">
                📥 Download Verified PDF
              </button>
            )}
