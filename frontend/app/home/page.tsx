@@ -60,7 +60,7 @@ export default function HomePage() {
       <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 bg-card/40 backdrop-blur-md border border-border rounded-[32px] p-8 space-y-6">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold border border-primary/20">
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold border border-primary/20 uppercase">
               {user?.fullName?.[0] || 'U'}
             </div>
             <div>
@@ -72,11 +72,11 @@ export default function HomePage() {
           <div className="grid grid-cols-2 gap-4 pb-4">
              <div className="p-4 rounded-2xl bg-muted/30 border border-border">
                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Resume Theme</p>
-                <p className="text-sm font-bold">Modern Professional</p>
+                <p className="text-sm font-bold text-foreground">{user?.resumeTheme || 'Modern Professional'}</p>
              </div>
              <div className="p-4 rounded-2xl bg-muted/30 border border-border">
                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Integrity Score</p>
-                <p className="text-sm font-bold text-primary">98.5%</p>
+                <p className="text-sm font-bold text-primary">{user?.integrityScore ? `${user.integrityScore}%` : 'Calculating...'}</p>
              </div>
           </div>
 
@@ -92,7 +92,7 @@ export default function HomePage() {
         <div className="bg-primary/5 border border-primary/20 rounded-[32px] p-8 flex flex-col justify-between">
            <div className="space-y-4">
               <h4 className="font-bold text-primary text-sm uppercase tracking-widest">Next Step</h4>
-              <p className="text-lg font-bold leading-tight">Your JD analysis for "Senior Software Engineer" is pending.</p>
+              <p className="text-lg font-bold leading-tight">Your JD analysis for "{user?.jobRole || 'your target role'}" is pending.</p>
            </div>
            
            <Link href="/analyzer" className="mt-8 flex items-center justify-between group">

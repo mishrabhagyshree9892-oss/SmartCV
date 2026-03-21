@@ -1,12 +1,16 @@
 "use client";
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 export default function ResumeBuilder() {
+  const searchParams = useSearchParams();
+  const isUploadMode = searchParams.get('upload') === 'true';
   const [activeSection, setActiveSection] = useState('personal');
   const [generating, setGenerating] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   
   // Resume Data State
   const [resumeData, setResumeData] = useState({
@@ -21,13 +25,32 @@ export default function ResumeBuilder() {
   const [newSkill, setNewSkill] = useState('');
   const [generatedResume, setGeneratedResume] = useState<any>(null);
 
+  const [userRole, setUserRole] = useState('Professional');
+
   useEffect(() => {
     if (!auth) return;
-    const unsubscribe = onAuthStateChanged(auth!, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth!, async (currentUser) => {
       setUser(currentUser);
+      if (currentUser) {
+        try {
+          const { getDoc, doc } = await import('firebase/firestore');
+          const { db } = await import('@/lib/firebase');
+          const userDoc = await getDoc(doc(db as any, 'users', currentUser.uid));
+          if (userDoc.exists() && userDoc.data().jobRole) {
+            setUserRole(userDoc.data().jobRole);
+          }
+        } catch(e) {}
+      }
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (isUploadMode) {
+      const name = sessionStorage.getItem('uploadedResumeName');
+      if (name) setUploadedFileName(name);
+    }
+  }, [isUploadMode]);
 
   const handleInputChange = (section: string, field: string, value: string) => {
     if (field) {
@@ -51,6 +74,7 @@ export default function ResumeBuilder() {
     setGenerating(true);
     try {
       const message = `
+        User Profession/Target Role: ${userRole}
         Personal Info: ${JSON.stringify(resumeData.personal)}
         Education: ${resumeData.education}
         Skills: ${resumeData.skills.join(', ')}
@@ -58,6 +82,8 @@ export default function ResumeBuilder() {
         Projects: ${resumeData.projects}
         Achievements: ${resumeData.achievements}
         Target JD: ${resumeData.targetJd}
+        
+        IMPORTANT: Generate the resume strictly matching the style, terminology, and expectations of the "${userRole}" profession. If they are a Chef, focus on culinary achievements. If they are a Teacher, focus on pedagogy, etc. Do not assume they are software engineers. Ensure all email addresses use mailto: links in generated output if applicable, and all URLs use absolute hrefs.
       `;
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/agents/resume`, {
@@ -94,6 +120,12 @@ export default function ResumeBuilder() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700 max-w-[1240px] mx-auto w-full flex flex-col h-full pb-10">
+      {isUploadMode && uploadedFileName && (
+        <div className="flex items-center gap-3 px-5 py-3 bg-emerald-50 border border-emerald-200 rounded-xl text-sm text-emerald-800 font-medium">
+          <span className="text-lg">📎</span>
+          <span>Uploaded: <strong>{uploadedFileName}</strong> — fill in any missing details below and click Generate.</span>
+        </div>
+      )}
       <div className="mb-8 flex justify-between items-end">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Resume Builder</h1>
@@ -226,13 +258,17 @@ export default function ResumeBuilder() {
                 <div className="space-y-6 animate-in fade-in duration-1000">
                   {/* Header */}
                   <div className="text-center border-b pb-6 border-zinc-100">
-                    <h2 className="text-2xl font-black mb-1">{resumeData.personal.fullName || 'YOUR NAME'}</h2>
-                    <div className="flex justify-center gap-4 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
-                      <span>{resumeData.personal.email}</span>
-                      <span>•</span>
-                      <span>{resumeData.personal.phone}</span>
-                      <span>•</span>
-                      <span>LinkedIn</span>
+                    <h2 className="text-2xl font-black mb-1">{resumeData.personal.fullName || user?.displayName || 'YOUR NAME'}</h2>
+                    <div className="flex justify-center flex-wrap gap-4 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                      {resumeData.personal.email && (
+                        <span><a href={`mailto:${resumeData.personal.email}`} className="hover:text-primary transition-colors">{resumeData.personal.email}</a></span>
+                      )}
+                      {resumeData.personal.phone && (
+                        <><span>•</span><span>{resumeData.personal.phone}</span></>
+                      )}
+                      {resumeData.personal.linkedin && (
+                        <><span>•</span><span><a href={resumeData.personal.linkedin.startsWith('http') ? resumeData.personal.linkedin : `https://${resumeData.personal.linkedin}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">LinkedIn</a></span></>
+                      )}
                     </div>
                   </div>
 
@@ -275,9 +311,14 @@ export default function ResumeBuilder() {
                     <h3 className="text-xs font-bold uppercase tracking-widest text-primary">Key Projects</h3>
                     {generatedResume.projects?.map((proj: any, i: number) => (
                       <div key={i} className="space-y-1">
-                        <h4 className="font-bold text-xs">{proj.name}</h4>
+                        <div className="flex justify-between items-baseline gap-2">
+                          <h4 className="font-bold text-xs">
+                            {proj.link ? <a href={proj.link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{proj.name}</a> : proj.name}
+                          </h4>
+                          {proj.link && <a href={proj.link} target="_blank" rel="noopener noreferrer" className="text-[9px] text-zinc-400 hover:text-primary transition-colors whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px]">{proj.link}</a>}
+                        </div>
                         <p className="text-[10px] text-zinc-600 leading-relaxed">{proj.description}</p>
-                        <div className="flex gap-2 pt-1">
+                        <div className="flex flex-wrap gap-2 pt-1">
                           {proj.technologies?.map((t: string, j: number) => (
                             <span key={j} className="text-[8px] font-bold text-primary/70">{t}</span>
                           ))}
