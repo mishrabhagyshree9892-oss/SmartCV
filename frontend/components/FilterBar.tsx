@@ -39,7 +39,7 @@ export default function FilterBar({ onFilterChange, onColorChange }: FilterBarPr
   };
 
   return (
-    <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-100 py-4 px-6 mb-8 flex flex-wrap items-center justify-between gap-6">
+    <div className="sticky top-[73px] z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 py-4 px-6 mb-8 flex flex-wrap items-center justify-between gap-6">
       <div className="flex items-center gap-4 flex-wrap">
         <span className="text-sm font-bold text-gray-400 uppercase tracking-wider">Filter by</span>
         

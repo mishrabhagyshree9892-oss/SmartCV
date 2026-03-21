@@ -50,13 +50,54 @@ export default function EmployerPortal() {
           </div>
         </div>
 
-        {/* Content Card */}
-        <div className="bg-card/80 backdrop-blur-[16px] border border-border/60 p-12 rounded-[2.5rem] shadow-sm flex-1 flex flex-col items-center justify-center min-h-[450px]">
-           <div className="w-20 h-20 bg-muted/30 rounded-full flex items-center justify-center mb-6">
-              <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" className="w-10 h-10 text-muted-foreground/20" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        {/* Content Card with Generic Professions */}
+        <div className="bg-card/80 backdrop-blur-[16px] border border-border/60 p-6 rounded-[2.5rem] shadow-sm flex-1 flex flex-col min-h-[450px]">
+           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+             {[
+               { name: 'Sarah Jenkins', role: 'Executive Chef', score: 98, verified: true, email: 'sarah.chef@example.com', link: 'https://sarahcooks.com', skills: ['Culinary Management', 'Menu Design', 'French Cuisine'] },
+               { name: 'David Chen', role: 'Senior React Developer', score: 96, verified: true, email: 'david.dev@example.com', link: 'https://davidcodes.io', skills: ['React', 'Next.js', 'System Architecture'] },
+               { name: 'Maria Garcia', role: 'High School Physics Teacher', score: 99, verified: true, email: 'maria.teach@example.com', link: 'https://mariateaches.edu', skills: ['Curriculum Dev', 'Classroom Mgmt', 'STEM'] },
+               { name: 'James Wilson', role: 'Financial Analyst', score: 94, verified: false, email: 'james.finance@example.com', link: 'https://jamesinvests.com', skills: ['Financial Modeling', 'Excel', 'Data Analysis'] }
+             ].map((candidate, i) => (
+               <div key={i} className="bg-white border border-border/40 p-5 rounded-3xl shadow-sm hover:shadow-lg transition-all flex flex-col gap-4">
+                 <div className="flex justify-between items-start">
+                   <div>
+                     <h3 className="font-bold text-foreground text-lg">{candidate.name}</h3>
+                     <p className="text-primary font-bold text-xs">{candidate.role}</p>
+                   </div>
+                   <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-xs font-bold border border-emerald-100">
+                     <span>{candidate.score}% Match</span>
+                   </div>
+                 </div>
+                 
+                 <div className="space-y-2 text-xs font-medium text-muted-foreground flex-1">
+                   <div className="flex items-center gap-2">
+                     <span className="opacity-50">📧</span>
+                     <a href={`mailto:${candidate.email}`} className="hover:text-primary transition-colors text-zinc-600">{candidate.email}</a>
+                   </div>
+                   <div className="flex items-center gap-2">
+                     <span className="opacity-50">🔗</span>
+                     <a href={candidate.link} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors text-zinc-600">{candidate.link.replace('https://', '')}</a>
+                   </div>
+                 </div>
+
+                 <div className="flex flex-wrap gap-1.5">
+                   {candidate.skills.map(s => (
+                     <span key={s} className="px-2 py-1 bg-zinc-100 text-[9px] font-bold text-zinc-600 rounded-md">{s}</span>
+                   ))}
+                 </div>
+                 
+                 <div className="flex justify-between items-center pt-4 border-t border-border/40 mt-auto">
+                   {candidate.verified ? (
+                     <span className="flex items-center gap-1.5 text-[9px] font-black text-emerald-500 uppercase tracking-widest"><div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"/> Verified</span>
+                   ) : (
+                     <span className="flex items-center gap-1.5 text-[9px] font-black text-amber-500 uppercase tracking-widest"><div className="w-1.5 h-1.5 bg-amber-500 rounded-full"/> Pending</span>
+                   )}
+                   <button className="text-[10px] font-bold text-primary hover:underline">View Verified CV →</button>
+                 </div>
+               </div>
+             ))}
            </div>
-           <h3 className="text-sm font-bold text-muted-foreground/60 mb-1">No candidate data available</h3>
-           <p className="text-[10px] text-muted-foreground/30 font-bold uppercase tracking-widest">Enable sample data to preview</p>
         </div>
 
         <footer className="mt-8 flex justify-between items-center text-[10px] font-bold text-muted-foreground/30 uppercase tracking-widest pl-2 pr-2">

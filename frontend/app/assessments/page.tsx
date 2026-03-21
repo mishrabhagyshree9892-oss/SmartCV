@@ -12,20 +12,41 @@ export default function Assessments() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [testResult, setTestResult] = useState<any>(null);
-
-  const testOptions = [
-    { id: 'dsa', name: 'Data Structures & Algorithms', duration: '45 mins', level: 'Advanced', icon: '🌳' },
-    { id: 'react', name: 'Frontend Excellence (React)', duration: '60 mins', level: 'Intermediate', icon: '⚛️' },
-    { id: 'system-design', name: 'System Design Patterns', duration: '90 mins', level: 'Expert', icon: '🏗️' },
-  ];
+  const [userRole, setUserRole] = useState('Professional');
 
   useEffect(() => {
     if (!auth) return;
-    const unsubscribe = onAuthStateChanged(auth!, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth!, async (currentUser) => {
       setUser(currentUser);
+      if (currentUser) {
+        // user state updated
+      }
     });
     return () => unsubscribe();
   }, []);
+
+  // Fetch user role from localStorage or an API if simpler, but for now we'll rely on the user having it in db. Let's just fetch it.
+  useEffect(() => {
+    if (user?.uid) {
+      const fetchRole = async () => {
+        try {
+          const { getDoc, doc } = await import('firebase/firestore');
+          const { db } = await import('@/lib/firebase');
+          const userDoc = await getDoc(doc(db as any, 'users', user.uid));
+          if (userDoc.exists() && userDoc.data().jobRole) {
+            setUserRole(userDoc.data().jobRole);
+          }
+        } catch(e) {}
+      };
+      fetchRole();
+    }
+  }, [user]);
+
+  const testOptions = [
+    { id: 'core', name: `${userRole} Core Fundamentals`, duration: '45 mins', level: 'Intermediate', icon: '🧠' },
+    { id: 'advanced', name: `Advanced ${userRole} Scenarios`, duration: '60 mins', level: 'Expert', icon: '⚡' },
+    { id: 'ethics', name: 'Workplace Ethics & Situational Judgement', duration: '30 mins', level: 'General', icon: '⚖️' },
+  ];
 
   const startTest = async (test: any) => {
     setActiveTest(test);

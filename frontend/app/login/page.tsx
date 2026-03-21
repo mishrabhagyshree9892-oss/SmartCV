@@ -2,63 +2,42 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signInWithCustomToken } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
-  const [step, setStep] = useState(1); // 1: Email, 2: OTP
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  const sendOTP = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/otp/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-      if (res.ok) {
-        setStep(2);
-        setMessage('OTP sent to your email!');
-      } else {
-        setMessage('Failed to send OTP. Try again.');
-      }
-    } catch (err) {
-      setMessage('Error connecting to server.');
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setMessage('Please fill in all fields.');
+      return;
     }
-    setLoading(false);
-  };
 
-  const verifyOTP = async () => {
     setLoading(true);
+    setMessage('');
+
     try {
-      const res = await fetch('/api/otp/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp })
-      });
-      const data = await res.json();
-      if (res.ok && data.token) {
-        if (!auth) {
-          setMessage('Firebase not initialized. Check your environment variables.');
-          setLoading(false);
-          return;
-        }
-        await signInWithCustomToken(auth!, data.token);
-        setMessage('Verification successful! Redirecting...');
-        // Handle actual login/redirect here
-        setTimeout(() => router.push('/'), 1000);
-      } else {
-        setMessage(data.error || 'Invalid OTP. Please try again.');
+      if (!auth) {
+        throw new Error('Firebase is not initialized.');
       }
-    } catch (err) {
-      setMessage('Error connecting to server.');
+      
+      await signInWithEmailAndPassword(auth, email, password);
+      
+      setMessage('Login successful! Redirecting...');
+      setTimeout(() => router.push('/'), 1000);
+      
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setMessage(err.message || 'Error signing in. Check your credentials.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -76,53 +55,37 @@ export default function Login() {
           </div>
         )}
 
-        <div className="space-y-6">
-          {step === 1 ? (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider px-1">Email Address</label>
-                <input 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm font-medium" 
-                  placeholder="name@company.com" 
-                />
-              </div>
-              <button 
-                onClick={sendOTP}
-                disabled={loading}
-                className="w-full py-4 bg-primary text-white font-bold rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
-              >
-                {loading ? 'Sending OTP...' : 'Send OTP'}
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="space-y-2 text-center">
-                <p className="text-sm text-gray-500 mb-6">Enter the 6-digit code sent to <br/><b className="text-gray-900">{email}</b></p>
-                <div className="flex justify-center gap-2">
-                  <input 
-                    type="text" 
-                    maxLength={6}
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl text-center text-2xl font-bold tracking-widest text-gray-900 focus:ring-2 focus:ring-primary/20 outline-none" 
-                    placeholder="000000"
-                  />
-                </div>
-              </div>
-              <button 
-                onClick={verifyOTP}
-                disabled={loading}
-                className="w-full py-4 bg-primary text-white font-bold rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
-              >
-                {loading ? 'Verifying...' : 'Verify & Log In'}
-              </button>
-              <button onClick={() => setStep(1)} className="w-full text-xs font-bold text-gray-400 hover:text-primary transition-colors uppercase tracking-widest">Change Email</button>
-            </div>
-          )}
-        </div>
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider px-1">Email Address</label>
+            <input 
+              type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm font-medium" 
+              placeholder="name@company.com" 
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider px-1">Password</label>
+            <input 
+              type="password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm font-medium" 
+              placeholder="Enter your password" 
+            />
+          </div>
+          
+          <button 
+            type="submit"
+            disabled={loading}
+            className="w-full py-4 bg-primary text-white font-bold rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 mt-4"
+          >
+            {loading ? 'Logging In...' : 'Log In'}
+          </button>
+        </form>
 
         <p className="text-center text-sm font-medium text-gray-500 pt-4">
           Don&apos;t have an account? <Link href="/signup" className="text-primary font-bold hover:underline">Sign up</Link>

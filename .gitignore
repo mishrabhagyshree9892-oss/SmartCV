@@ -34,3 +34,6 @@ backend/server_log*.txt
 *.docx
 .vercel
 .turbo
+
+.vercel
+.env*.local

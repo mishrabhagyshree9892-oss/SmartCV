@@ -38,8 +38,8 @@ export default function Header() {
     }
   };
 
-  const getInitials = (name: string) => {
-    return name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
+  const getInitials = (text: string) => {
+    return text?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
   };
   
   const getTitle = () => {
@@ -103,12 +103,12 @@ export default function Header() {
         {user && (
           <div className="flex items-center gap-3 pl-2 border-l border-border ml-1">
             <div className="hidden md:flex flex-col items-end">
-              <span className="text-[11px] font-bold text-foreground leading-tight">{user.fullName || 'User'}</span>
+              <span className="text-[11px] font-bold text-foreground leading-tight">{user.jobRole || user.fullName || 'User'}</span>
               <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-tighter">Professional Account</span>
             </div>
             <div className="relative group">
                <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs shadow-sm group-hover:bg-primary/20 transition-all cursor-pointer">
-                 {getInitials(user.fullName)}
+                 {getInitials(user.jobRole || user.fullName || user.email)}
                </div>
                
                {/* Simple logout tooltip/menu on hover or click */}

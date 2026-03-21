@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "SmartCV | Enterprise AI Career Growth",
   description: "Blockchain-verified career intelligence and AI-powered resume optimization.",
+  icons: {
+    icon: "/logo.jpeg",
+  },
 };
 
 import Layout from "@/components/Layout";

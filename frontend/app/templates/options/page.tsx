@@ -1,11 +1,35 @@
 "use client";
+import { useRef, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, PlusCircle, Upload, CheckCircle2 } from 'lucide-react';
 
 export default function SelectResumeOption() {
   const searchParams = useSearchParams();
   const templateId = searchParams.get('templateId');
+  const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        // Store file data in sessionStorage so builder page can access it
+        sessionStorage.setItem('uploadedResumeName', file.name);
+        sessionStorage.setItem('uploadedResumeType', file.type);
+        sessionStorage.setItem('uploadedResumeData', reader.result as string);
+      } catch {
+        // sessionStorage might be full; proceed anyway
+      }
+      router.push(`/builder?templateId=${templateId}&upload=true`);
+    };
+    reader.onerror = () => setUploading(false);
+    reader.readAsDataURL(file);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
@@ -45,7 +69,7 @@ export default function SelectResumeOption() {
             </div>
 
             {/* Upload Existing Option */}
-            <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-gray-100 hover:shadow-xl hover:scale-[1.02] transition-all group cursor-pointer flex flex-col items-center text-center">
+            <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-gray-100 hover:shadow-xl hover:scale-[1.02] transition-all group flex flex-col items-center text-center">
                <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-8 group-hover:bg-blue-100 transition-colors relative">
                   <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-blue-500">
                      <Upload size={32} />
@@ -57,12 +81,23 @@ export default function SelectResumeOption() {
                   Edit your resume using expertly generated content in a fresh, new design.
                </p>
 
-               <Link href={`/builder?templateId=${templateId}&upload=true`} className="w-full">
-                  <button className="w-full py-4 bg-amber-400 text-gray-900 font-bold rounded-2xl shadow-lg shadow-amber-400/20 hover:bg-amber-500 transition-all flex items-center justify-center gap-2">
-                     <Upload size={20} />
-                     Choose file
-                  </button>
-               </Link>
+               {/* Hidden real file input */}
+               <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".doc,.docx,.pdf,.html,.rtf,.txt"
+                  className="hidden"
+                  onChange={handleFileChange}
+               />
+
+               <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="w-full py-4 bg-amber-400 text-gray-900 font-bold rounded-2xl shadow-lg shadow-amber-400/20 hover:bg-amber-500 transition-all flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
+               >
+                  <Upload size={20} />
+                  {uploading ? 'Opening builder...' : 'Choose file'}
+               </button>
                
                <p className="mt-4 text-[10px] font-bold text-gray-300 uppercase tracking-widest">
                   DOC, DOCX, PDF, HTML, RTF, TXT

@@ -67,9 +67,8 @@ export default function ResumeBuilder() {
   });
   
   // Resume Data State
-
   const [resumeData, setResumeData] = useState({
-    personal: { fullName: '', email: '', phone: '', linkedin: '' },
+    personal: { fullName: '', email: '', phone: '', linkedin: '', photo: '' },
     education: '',
     experience: '',
     skills: [] as string[],
@@ -82,6 +81,7 @@ export default function ResumeBuilder() {
 
   const [userRole, setUserRole] = useState('Professional');
 
+  // ... (keeping effect hooks unchanged) ...
   useEffect(() => {
     if (!auth) return;
     const unsubscribe = onAuthStateChanged(auth!, async (currentUser) => {
@@ -118,6 +118,17 @@ export default function ResumeBuilder() {
     }
   };
 
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        handleInputChange('personal', 'photo', event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const addSkill = () => {
     if (newSkill.trim()) {
       setResumeData(prev => ({ ...prev, skills: [...prev.skills, newSkill.trim()] }));
@@ -130,7 +141,7 @@ export default function ResumeBuilder() {
     try {
       const message = `
         Role: ${userRole}
-        Info: ${JSON.stringify(resumeData.personal)}
+        Info: ${JSON.stringify({ ...resumeData.personal, photo: 'REMOVED_FOR_AI' })}
         Edu: ${resumeData.education}
         Skills: ${resumeData.skills.join(', ')}
         Exp: ${resumeData.experience}
@@ -150,12 +161,9 @@ export default function ResumeBuilder() {
         })
       });
       const data = await response.json();
-      console.log('Resume Generator Data:', data);
       const parsedResult = data.result || data.data?.module_outputs || (data.data && Object.keys(data.data).length > 0 ? data.data : null) || data;
       if (parsedResult) {
         setGeneratedResume(parsedResult);
-      } else {
-        console.warn('Could not find result in data:', data);
       }
     } catch (error) {
       console.error('Resume generation failed:', error);
@@ -211,42 +219,62 @@ export default function ResumeBuilder() {
               {activeSection === section.id && (
                 <div className="p-5 pt-0 animate-in slide-in-from-top-2 duration-300">
                   {section.id === 'personal' && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Full Name</label>
-                        <input 
-                          value={resumeData.personal.fullName}
-                          onChange={(e) => handleInputChange('personal', 'fullName', e.target.value)}
-                          className="w-full p-2.5 bg-background/60 border border-border/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 text-sm" 
-                          placeholder="John Doe" 
-                        />
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 rounded-full bg-muted border border-border flex items-center justify-center overflow-hidden shrink-0">
+                          {resumeData.personal.photo ? (
+                            <img src={resumeData.personal.photo} alt="Profile" className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-muted-foreground text-xs">No img</span>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Profile Photo</label>
+                          <input 
+                            type="file" 
+                            accept="image/*"
+                            onChange={handlePhotoUpload}
+                            className="text-xs text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer w-full"
+                          />
+                        </div>
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Email</label>
-                        <input 
-                          value={resumeData.personal.email}
-                          onChange={(e) => handleInputChange('personal', 'email', e.target.value)}
-                          className="w-full p-2.5 bg-background/60 border border-border/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 text-sm" 
-                          placeholder="john@email.com" 
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Phone</label>
-                        <input 
-                          value={resumeData.personal.phone}
-                          onChange={(e) => handleInputChange('personal', 'phone', e.target.value)}
-                          className="w-full p-2.5 bg-background/60 border border-border/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 text-sm" 
-                          placeholder="+1 234 567 8900" 
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">LinkedIn</label>
-                        <input 
-                          value={resumeData.personal.linkedin}
-                          onChange={(e) => handleInputChange('personal', 'linkedin', e.target.value)}
-                          className="w-full p-2.5 bg-background/60 border border-border/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 text-sm" 
-                          placeholder="linkedin.com/in/..." 
-                        />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Full Name</label>
+                          <input 
+                            value={resumeData.personal.fullName}
+                            onChange={(e) => handleInputChange('personal', 'fullName', e.target.value)}
+                            className="w-full p-2.5 bg-background/60 border border-border/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 text-sm" 
+                            placeholder="John Doe" 
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Email</label>
+                          <input 
+                            value={resumeData.personal.email}
+                            onChange={(e) => handleInputChange('personal', 'email', e.target.value)}
+                            className="w-full p-2.5 bg-background/60 border border-border/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 text-sm" 
+                            placeholder="john@email.com" 
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Phone</label>
+                          <input 
+                            value={resumeData.personal.phone}
+                            onChange={(e) => handleInputChange('personal', 'phone', e.target.value)}
+                            className="w-full p-2.5 bg-background/60 border border-border/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 text-sm" 
+                            placeholder="+1 234 567 8900" 
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">LinkedIn</label>
+                          <input 
+                            value={resumeData.personal.linkedin}
+                            onChange={(e) => handleInputChange('personal', 'linkedin', e.target.value)}
+                            className="w-full p-2.5 bg-background/60 border border-border/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 text-sm" 
+                            placeholder="linkedin.com/in/..." 
+                          />
+                        </div>
                       </div>
                     </div>
                   )}
@@ -310,11 +338,17 @@ export default function ResumeBuilder() {
                   </div>
                 </div>
               ) : (
-                <div ref={componentRef} className={`${styles.container} animate-in fade-in duration-1000`}>
+                <div ref={componentRef} className={`${styles.container} animate-in fade-in duration-1000 relative`}>
+                  {/* Photo Profile if available */}
+                  {resumeData.personal.photo && (
+                    <div className="absolute top-8 right-8 w-24 h-24 rounded-2xl overflow-hidden border-4 border-white shadow-xl bg-gray-100 flex items-center justify-center print:border-gray-200">
+                       <img src={resumeData.personal.photo} alt="Profile" className="w-full h-full object-cover" />
+                    </div>
+                  )}
                   {/* Header */}
                   <div className={styles.header}>
-                    <h2 className={styles.name}>{resumeData.personal.fullName || user?.displayName || 'YOUR NAME'}</h2>
-                    <div className="flex justify-center flex-wrap gap-4 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                    <h2 className={`${styles.name} ${resumeData.personal.photo ? 'pr-28' : ''}`}>{resumeData.personal.fullName || user?.displayName || 'YOUR NAME'}</h2>
+                    <div className={`flex flex-wrap gap-4 text-[10px] font-bold text-zinc-500 uppercase tracking-wider mt-2 ${resumeData.personal.photo ? 'pr-28' : ''}`}>
                       {resumeData.personal.email && (
                         <span><a href={`mailto:${resumeData.personal.email}`} className="hover:text-primary transition-colors">{resumeData.personal.email}</a></span>
                       )}
@@ -398,13 +432,11 @@ export default function ResumeBuilder() {
            </div>
            
            {generatedResume && (
-             <div className="mt-4 grid grid-cols-2 gap-3">
-               <button onClick={() => handleDirectDownload()} className="w-full py-4 bg-primary text-white font-bold rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 transition-all flex items-center justify-center gap-2">
-                 📥 Download PDF
+             <div className="mt-4">
+               <button onClick={() => handlePrint()} className="w-full py-4 bg-primary text-white font-bold rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
+                 🖨️ Download or Print PDF
                </button>
-               <button onClick={() => handlePrint()} className="w-full py-4 bg-muted text-foreground font-bold rounded-2xl border border-border hover:bg-muted/80 transition-all flex items-center justify-center gap-2">
-                 🖨️ Print Resume
-               </button>
+               <p className="text-[10px] text-center text-muted-foreground mt-2 font-medium">Use 'Save as PDF' in the destination dropdown for best formatting.</p>
              </div>
            )}
         </div>
