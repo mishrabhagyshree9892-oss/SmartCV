@@ -61,10 +61,26 @@ export default function ResumeBuilder() {
     skills: [] as string[],
     projects: '',
     achievements: '',
-    targetJd: ''
+    targetJd: '',
+    digilockerVerified: false
   });
   const [newSkill, setNewSkill] = useState('');
   const [generatedResume, setGeneratedResume] = useState<any>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+
+  const handleDigilockerMock = () => {
+    setIsVerifying(true);
+    // Simulate API delay and verification
+    setTimeout(() => {
+      setResumeData(prev => ({
+        ...prev,
+        education: "B.Tech in Computer Science, State University, 2018-2022 (Verified)\nClass 12th Board, Central Board, 2018 (Verified)",
+        digilockerVerified: true
+      }));
+      setIsVerifying(false);
+    }, 2000);
+  };
+
 
   const [userRole, setUserRole] = useState('Professional');
 
@@ -136,7 +152,7 @@ export default function ResumeBuilder() {
         Achv: ${resumeData.achievements}
         JD: ${resumeData.targetJd}
         
-        CRITICAL: Generate a very brief, ATS-optimized resume in valid JSON. Be extremely fast. Output ONLY the necessary JSON fields (professional_summary, skills array, work_experience array, projects array, keyword_match_score, recommended_template). Keep descriptions under 2 sentences. No conversational text.
+        CRITICAL: Generate a very brief, ATS-optimized resume in valid JSON. Be extremely fast. Output ONLY the necessary JSON fields (professional_summary, skills array, work_experience array, projects array, education array (include degree, institution, duration objects), keyword_match_score, recommended_template). Keep descriptions under 2 sentences. No conversational text.
       `;
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/agents/resume`, {
@@ -267,12 +283,40 @@ export default function ResumeBuilder() {
                     </div>
                   )}
                   {['education', 'experience', 'projects', 'achievements'].includes(section.id) && (
-                    <textarea 
-                      value={(resumeData as any)[section.id]}
-                      onChange={(e) => handleInputChange(section.id, '', e.target.value)}
-                      className="w-full h-32 p-4 bg-background/60 border border-border/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 text-xs resize-none"
-                      placeholder={`Enter your ${section.title} details here...`}
-                    />
+                    <div className="space-y-3">
+                      {section.id === 'education' && (
+                         <div className="flex items-center justify-between bg-emerald-50 p-3 rounded-lg border border-emerald-100">
+                            <div className="flex items-center gap-2">
+                               <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
+                                  <span className="text-emerald-600 font-bold text-xs">DL</span>
+                               </div>
+                               <div>
+                                  <h4 className="text-[11px] font-bold text-emerald-900">DigiLocker Verification</h4>
+                                  <p className="text-[9px] text-emerald-700">Import verified academic records directly.</p>
+                               </div>
+                            </div>
+                            {resumeData.digilockerVerified ? (
+                               <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white text-[10px] font-bold rounded-full shadow-sm">
+                                  <span>✓</span> Verified
+                               </div>
+                            ) : (
+                               <button 
+                                 onClick={handleDigilockerMock}
+                                 disabled={isVerifying}
+                                 className="px-4 py-1.5 bg-white text-emerald-700 text-[10px] font-bold rounded-full shadow-sm border border-emerald-200 hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                               >
+                                 {isVerifying ? 'Authenticating...' : 'Connect'}
+                               </button>
+                            )}
+                         </div>
+                      )}
+                      <textarea 
+                        value={(resumeData as any)[section.id]}
+                        onChange={(e) => handleInputChange(section.id, '', e.target.value)}
+                        className="w-full h-32 p-4 bg-background/60 border border-border/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 text-xs resize-none"
+                        placeholder={`Enter your ${section.title} details here...`}
+                      />
+                    </div>
                   )}
                   {(section.id === 'skills') && (
                     <div className="space-y-3">
@@ -363,6 +407,25 @@ export default function ResumeBuilder() {
                         <span key={i} className="px-2 py-0.5 bg-zinc-50 border border-zinc-200 rounded text-[9px] font-bold text-zinc-700">{s}</span>
                       ))}
                     </div>
+                  </div>
+
+                  {/* Education */}
+                  <div className="space-y-4">
+                    <h3 className={styles.sectionHead}>Academic Background</h3>
+                    {generatedResume.education?.map((edu: any, i: number) => (
+                      <div key={i} className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-bold text-xs flex items-center gap-2">
+                             {edu.degree}
+                             {resumeData.digilockerVerified && (
+                               <span title="Verified by DigiLocker" className="inline-flex items-center justify-center w-3 h-3 bg-emerald-500 text-white rounded-full text-[6px]">✓</span>
+                             )}
+                          </h4>
+                          <span className="text-[10px] text-zinc-600">{edu.institution}</span>
+                        </div>
+                        <span className="text-[9px] font-bold text-zinc-400">{edu.duration}</span>
+                      </div>
+                    ))}
                   </div>
 
                   {/* Experience */}
