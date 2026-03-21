@@ -13,7 +13,53 @@ export default function ResumeBuilder() {
   const [generating, setGenerating] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const templateId = searchParams.get('templateId') || 'ats';
   const componentRef = useRef<HTMLDivElement>(null);
+  
+  const getLayoutStyles = () => {
+    const type = templateId.split('-')[0].toLowerCase();
+    if (type === 'modern') {
+      return {
+        container: 'space-y-6 bg-white p-8 border-l-8 border-indigo-600 text-gray-800 print:p-4 print:shadow-none',
+        header: 'border-b-2 border-indigo-600 pb-4 mb-4',
+        name: 'text-3xl font-black text-gray-900',
+        sectionHead: 'text-sm font-bold uppercase tracking-widest text-indigo-600 mb-2 border-b-2 border-indigo-600/20 pb-1 inline-block',
+        bullet: 'list-disc list-outside ml-4 space-y-1 marker:text-indigo-600',
+      };
+    } else if (type === 'creative') {
+       return {
+        container: 'space-y-6 bg-[#fdfbf7] p-8 text-gray-800 border-2 border-amber-900/10 print:p-4 print:shadow-none',
+        header: 'bg-emerald-700 text-white p-6 -mx-8 -mt-8 mb-6',
+        name: 'text-4xl font-extrabold text-white',
+        sectionHead: 'text-sm font-extrabold uppercase tracking-widest bg-emerald-700/10 text-emerald-800 px-3 py-1 rounded inline-block mb-3',
+        bullet: 'list-disc list-outside ml-4 space-y-1',
+       };
+    } else { // default ats
+       return {
+        container: 'space-y-4 bg-white p-8 text-black font-serif print:p-4 print:shadow-none',
+        header: 'text-center border-b border-black pb-4 mb-4',
+        name: 'text-2xl font-bold uppercase',
+        sectionHead: 'text-sm font-bold uppercase tracking-widest border-b border-black pb-0.5 mb-2',
+        bullet: 'list-disc list-outside ml-4 space-y-1',
+       };
+    }
+  };
+  const styles = getLayoutStyles();
+
+  const handleDirectDownload = async () => {
+     if (!componentRef.current) return;
+     const html2pdf = (await import('html2pdf.js')).default;
+     const element = componentRef.current;
+     const fileName = user?.fullName ? `${user.fullName}_SmartCV.pdf` : 'SmartCV_Resume.pdf';
+     const opt = {
+       margin: 10,
+       filename: fileName,
+       image: { type: 'jpeg', quality: 0.98 },
+       html2canvas: { scale: 2, useCORS: true },
+       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+     };
+     html2pdf().set(opt).from(element).save();
+  };
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
@@ -264,10 +310,10 @@ export default function ResumeBuilder() {
                   </div>
                 </div>
               ) : (
-                <div ref={componentRef} className="space-y-6 animate-in fade-in duration-1000 p-8 bg-white print:p-4 print:shadow-none">
+                <div ref={componentRef} className={`${styles.container} animate-in fade-in duration-1000`}>
                   {/* Header */}
-                  <div className="text-center border-b pb-6 border-zinc-100">
-                    <h2 className="text-2xl font-black mb-1">{resumeData.personal.fullName || user?.displayName || 'YOUR NAME'}</h2>
+                  <div className={styles.header}>
+                    <h2 className={styles.name}>{resumeData.personal.fullName || user?.displayName || 'YOUR NAME'}</h2>
                     <div className="flex justify-center flex-wrap gap-4 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
                       {resumeData.personal.email && (
                         <span><a href={`mailto:${resumeData.personal.email}`} className="hover:text-primary transition-colors">{resumeData.personal.email}</a></span>
@@ -283,13 +329,13 @@ export default function ResumeBuilder() {
 
                   {/* Summary */}
                   <div className="space-y-2">
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-primary">Professional Summary</h3>
+                    <h3 className={styles.sectionHead}>Professional Summary</h3>
                     <p className="text-[11px] leading-relaxed text-zinc-600">{generatedResume.professional_summary}</p>
                   </div>
 
                   {/* Skills */}
                   <div className="space-y-2">
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-primary">Technical Expertise</h3>
+                    <h3 className={styles.sectionHead}>Technical Expertise</h3>
                     <div className="flex flex-wrap gap-1.5">
                       {generatedResume.skills?.map((s: string, i: number) => (
                         <span key={i} className="px-2 py-0.5 bg-zinc-50 border border-zinc-200 rounded text-[9px] font-bold text-zinc-700">{s}</span>
@@ -299,14 +345,14 @@ export default function ResumeBuilder() {
 
                   {/* Experience */}
                   <div className="space-y-4">
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-primary">Professional Experience</h3>
+                    <h3 className={styles.sectionHead}>Professional Experience</h3>
                     {generatedResume.work_experience?.map((exp: any, i: number) => (
                       <div key={i} className="space-y-2">
                         <div className="flex justify-between items-end">
                           <h4 className="font-bold text-xs">{exp.role} @ {exp.company}</h4>
                           <span className="text-[9px] font-bold text-zinc-400">{exp.duration}</span>
                         </div>
-                        <ul className="list-disc list-outside ml-4 space-y-1">
+                        <ul className={styles.bullet}>
                           {exp.bullets?.map((b: string, j: number) => (
                             <li key={j} className="text-[10px] text-zinc-600 leading-relaxed">{b}</li>
                           ))}
@@ -317,7 +363,7 @@ export default function ResumeBuilder() {
 
                   {/* Projects */}
                   <div className="space-y-4">
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-primary">Key Projects</h3>
+                    <h3 className={styles.sectionHead}>Key Projects</h3>
                     {generatedResume.projects?.map((proj: any, i: number) => (
                       <div key={i} className="space-y-1">
                         <div className="flex justify-between items-baseline gap-2">
@@ -352,9 +398,14 @@ export default function ResumeBuilder() {
            </div>
            
            {generatedResume && (
-             <button onClick={() => handlePrint()} className="mt-4 w-full py-4 bg-emerald-500 text-white font-bold rounded-2xl shadow-xl shadow-emerald-200 hover:scale-105 transition-all flex items-center justify-center gap-2">
-               📥 Download Verified PDF
-             </button>
+             <div className="mt-4 grid grid-cols-2 gap-3">
+               <button onClick={() => handleDirectDownload()} className="w-full py-4 bg-primary text-white font-bold rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 transition-all flex items-center justify-center gap-2">
+                 📥 Download PDF
+               </button>
+               <button onClick={() => handlePrint()} className="w-full py-4 bg-muted text-foreground font-bold rounded-2xl border border-border hover:bg-muted/80 transition-all flex items-center justify-center gap-2">
+                 🖨️ Print Resume
+               </button>
+             </div>
            )}
         </div>
       </div>

@@ -47,7 +47,7 @@ export default function HomePage() {
         </p>
 
         <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-          <Link href="/builder" className="px-8 py-4 bg-primary text-white font-bold rounded-2xl hover:scale-105 transition-all shadow-xl shadow-primary/20">
+          <Link href="/templates" className="px-8 py-4 bg-primary text-white font-bold rounded-2xl hover:scale-105 transition-all shadow-xl shadow-primary/20">
             Start Building Free
           </Link>
           <Link href="/" className="px-8 py-4 bg-secondary text-foreground font-bold rounded-2xl border border-border hover:bg-muted transition-all">
