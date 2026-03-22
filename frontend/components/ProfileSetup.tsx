@@ -34,10 +34,13 @@ export default function ProfileSetup({ onComplete }: { onComplete: () => void })
 
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-card w-full max-w-lg rounded-3xl border border-border shadow-2xl p-8 animate-in zoom-in duration-300">
+      <div className="bg-card w-full max-w-lg rounded-3xl border border-border shadow-2xl p-8 animate-in zoom-in duration-300 relative z-50">
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-foreground">Complete Your Profile</h2>
-          <p className="text-muted-foreground text-sm">Let&apos;s get started by setting up your basic information.</p>
+          <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary text-2xl mx-auto mb-4">
+             🎉
+          </div>
+          <h2 className="text-2xl font-black text-foreground">Welcome to SmartCV!</h2>
+          <p className="text-muted-foreground text-sm font-medium mt-1">Signup successful. Let&apos;s set up your dashboard preferences.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -91,9 +94,9 @@ export default function ProfileSetup({ onComplete }: { onComplete: () => void })
           <button 
             disabled={loading}
             type="submit"
-            className="w-full py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 mt-2"
+            className="w-full py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 mt-4"
           >
-            {loading ? 'Creating Profile...' : 'Create Profile & Continue'}
+            {loading ? 'Saving Preferences...' : 'Finish Setup & Open Dashboard'}
           </button>
         </form>
       </div>

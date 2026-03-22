@@ -66,6 +66,39 @@ const templates = [
         recommended: false,
         previewImage: '/templates/grid-06.png',
         description: 'Structured grid layout for technical project managers.'
+    },
+    {
+        id: 'tech-07',
+        name: 'Tech Innovator',
+        category: 'Modern',
+        hasPhoto: false,
+        hasGraphics: true,
+        columns: 1,
+        recommended: true,
+        previewImage: '/templates/grid-06.png',
+        description: 'Sleek, tech-focused design tailored for backend and systems engineering.'
+    },
+    {
+        id: 'corporate-08',
+        name: 'Corporate Trust',
+        category: 'Professional',
+        hasPhoto: true,
+        hasGraphics: false,
+        columns: 2,
+        recommended: false,
+        previewImage: '/templates/professional-01.png',
+        description: 'Highly formal 2-column layout designed specifically for banking and law.'
+    },
+    {
+        id: 'marketing-09',
+        name: 'Marketing Genius',
+        category: 'Creative',
+        hasPhoto: true,
+        hasGraphics: true,
+        columns: 1,
+        recommended: true,
+        previewImage: '/templates/creative-03.png',
+        description: 'Vibrant, colorful full-page presentation optimized for creatives.'
     }
 ];
 

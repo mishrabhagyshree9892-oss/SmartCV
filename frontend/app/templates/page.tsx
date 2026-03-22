@@ -67,14 +67,16 @@ export default function TemplatesPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="px-10 py-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-30">
+      <header className="px-10 py-6 border-b border-gray-100 flex items-center justify-between bg-white relative">
         <div className="flex items-center gap-6">
           <Link href="/" className="p-2 hover:bg-gray-50 rounded-full transition-colors">
             <ArrowLeft size={24} className="text-gray-400" />
           </Link>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-xl">R</div>
-            <span className="text-xl font-bold tracking-tight">Templates</span>
+          <div className="flex flex-col">
+             <div className="flex items-center gap-2">
+               <img src="/logo.jpeg" alt="SmartCV Logo" className="w-8 h-8 rounded-lg shadow-[0_0_10px_rgba(16,185,129,0.3)] object-cover" />
+               <h1 className="text-xl font-bold tracking-tight text-emerald-950">SmartCV <span className="text-gray-400 font-medium">Templates</span></h1>
+             </div>
           </div>
         </div>
         <div className="hidden sm:block">

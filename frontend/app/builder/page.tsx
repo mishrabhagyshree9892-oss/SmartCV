@@ -60,6 +60,8 @@ export default function ResumeBuilder() {
   const [resumeData, setResumeData] = useState({
     personal: { fullName: '', email: '', phone: '', linkedin: '', photo: '', github: '', behance: '', kaggle: '', videoUrl: '' },
     education: '',
+    experienceType: 'fresher' as 'fresher' | 'experience',
+    experienceDetails: { company: '', designation: '', duration: '' },
     experience: '',
     skills: [] as string[],
     projects: '',
@@ -163,8 +165,20 @@ export default function ResumeBuilder() {
           const { getDoc, doc } = await import('firebase/firestore');
           const { db } = await import('@/lib/firebase');
           const userDoc = await getDoc(doc(db as any, 'users', currentUser.uid));
-          if (userDoc.exists() && userDoc.data().jobRole) {
-            setUserRole(userDoc.data().jobRole);
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            if (data.jobRole) setUserRole(data.jobRole);
+            
+            // Auto-fill personal data from profile if still empty
+            setResumeData(prev => ({
+              ...prev,
+              personal: {
+                ...prev.personal,
+                fullName: prev.personal.fullName || data.fullName || '',
+                email: prev.personal.email || data.email || currentUser.email || '',
+                phone: prev.personal.phone || data.phone || '',
+              }
+            }));
           }
         } catch(e) {}
       }
@@ -180,6 +194,13 @@ export default function ResumeBuilder() {
   }, [isUploadMode]);
 
   const handleInputChange = (section: string, field: string, value: string) => {
+    if (section === 'experienceDetails') {
+       setResumeData(prev => ({
+         ...prev,
+         experienceDetails: { ...prev.experienceDetails, [field]: value }
+       }));
+       return;
+    }
     if (field) {
       setResumeData(prev => ({
         ...prev,
@@ -216,7 +237,9 @@ export default function ResumeBuilder() {
         Info: ${JSON.stringify({ ...resumeData.personal, photo: 'REMOVED_FOR_AI' })}
         Edu: ${resumeData.education}
         Skills: ${resumeData.skills.join(', ')}
-        Exp: ${resumeData.experience}
+        Exp Type: ${resumeData.experienceType}
+        ${resumeData.experienceType === 'experience' ? `Current/Last Job: ${resumeData.experienceDetails.designation} at ${resumeData.experienceDetails.company} (${resumeData.experienceDetails.duration})` : ''}
+        Exp Details: ${resumeData.experience}
         Proj: ${resumeData.projects}
         Achv: ${resumeData.achievements}
         JD: ${resumeData.targetJd}
@@ -397,6 +420,64 @@ export default function ResumeBuilder() {
                       </div>
                     </div>
                   )}
+                  {section.id === 'experience' && (
+                    <div className="mb-4 flex flex-col gap-4">
+                       <div className="flex items-center gap-6 p-4 bg-muted/30 rounded-xl border border-border/40">
+                          <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground cursor-pointer transition-colors hover:text-foreground">
+                             <input 
+                               type="radio" 
+                               name="experienceType" 
+                               checked={resumeData.experienceType === 'fresher'} 
+                               onChange={() => setResumeData(prev => ({...prev, experienceType: 'fresher'}))}
+                               className="accent-primary" 
+                             />
+                             Fresher
+                          </label>
+                          <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground cursor-pointer transition-colors hover:text-foreground">
+                             <input 
+                               type="radio" 
+                               name="experienceType" 
+                               checked={resumeData.experienceType === 'experience'} 
+                               onChange={() => setResumeData(prev => ({...prev, experienceType: 'experience'}))}
+                               className="accent-primary" 
+                             />
+                             Work Experience
+                          </label>
+                       </div>
+
+                       {resumeData.experienceType === 'experience' && (
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 animate-in fade-in slide-in-from-top-2">
+                             <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Company Name</label>
+                                <input 
+                                   value={resumeData.experienceDetails.company}
+                                   onChange={(e) => handleInputChange('experienceDetails', 'company', e.target.value)}
+                                   className="w-full p-2.5 bg-background/60 border border-border/40 rounded-lg outline-none text-xs" 
+                                   placeholder="e.g. Google" 
+                                />
+                             </div>
+                             <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Designation</label>
+                                <input 
+                                   value={resumeData.experienceDetails.designation}
+                                   onChange={(e) => handleInputChange('experienceDetails', 'designation', e.target.value)}
+                                   className="w-full p-2.5 bg-background/60 border border-border/40 rounded-lg outline-none text-xs" 
+                                   placeholder="e.g. SDE-1" 
+                                />
+                             </div>
+                             <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Duration</label>
+                                <input 
+                                   value={resumeData.experienceDetails.duration}
+                                   onChange={(e) => handleInputChange('experienceDetails', 'duration', e.target.value)}
+                                   className="w-full p-2.5 bg-background/60 border border-border/40 rounded-lg outline-none text-xs" 
+                                   placeholder="e.g. 2 yrs" 
+                                />
+                             </div>
+                          </div>
+                       )}
+                    </div>
+                  )}
                   {['education', 'experience', 'projects', 'achievements'].includes(section.id) && (
                     <div className="space-y-3">
                       {section.id === 'education' && (
@@ -421,7 +502,7 @@ export default function ResumeBuilder() {
                                  className="px-4 py-1.5 bg-white text-emerald-700 text-[10px] font-bold rounded-full shadow-sm border border-emerald-200 hover:bg-emerald-100 transition-colors disabled:opacity-50"
                                >
                                  {isVerifying ? 'Authenticating...' : 'Connect'}
-                               </button>
+                                </button>
                             )}
                          </div>
                       )}
@@ -429,7 +510,7 @@ export default function ResumeBuilder() {
                         value={(resumeData as any)[section.id]}
                         onChange={(e) => handleInputChange(section.id, '', e.target.value)}
                         className="w-full h-32 p-4 bg-background/60 border border-border/40 rounded-lg outline-none focus:ring-2 focus:ring-primary/20 text-xs resize-none"
-                        placeholder={`Enter your ${section.title} details here...`}
+                        placeholder={section.id === 'experience' && resumeData.experienceType === 'fresher' ? "Describe any internships, volunteering or academic leadership..." : `Describe your ${section.title} details here...`}
                       />
                     </div>
                   )}

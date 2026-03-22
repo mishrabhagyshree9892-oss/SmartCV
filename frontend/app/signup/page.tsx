@@ -10,6 +10,8 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [jobRole, setJobRole] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const router = useRouter();
@@ -23,28 +25,58 @@ export default function Signup() {
     
     setLoading(true);
     setMessage('');
-    
+
     try {
-      if (!auth || !db) {
-        throw new Error('Firebase is not initialized.');
+      if (!otpSent) {
+        // Step 1: Send OTP
+        const res = await fetch('/api/otp/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to send OTP');
+        
+        setOtpSent(true);
+        setMessage('OTP sent to your email. Please check your inbox.');
+      } else {
+        // Step 2: Verify OTP
+        if (!otp) {
+          setMessage('Please enter the OTP.');
+          setLoading(false);
+          return;
+        }
+
+        const verifyRes = await fetch('/api/otp/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, otp }),
+        });
+        
+        const verifyData = await verifyRes.json();
+        if (!verifyRes.ok) throw new Error(verifyData.error || 'Invalid OTP');
+
+        // OTP Verified, create user
+        if (!auth || !db) throw new Error('Firebase is not initialized.');
+        
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        
+        // Save additional user info like jobRole to Firestore
+        await setDoc(doc(db, 'users', userCredential.user.uid), {
+          email,
+          jobRole,
+          role: 'user',
+          createdAt: serverTimestamp(),
+        });
+        
+        setMessage('Account created successfully! Redirecting...');
+        setTimeout(() => router.push('/'), 1000);
       }
-      
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
-      // Save additional user info like jobRole to Firestore
-      await setDoc(doc(db, 'users', userCredential.user.uid), {
-        email,
-        jobRole,
-        role: 'user',
-        createdAt: serverTimestamp(),
-      });
-      
-      setMessage('Account created successfully! Redirecting...');
-      setTimeout(() => router.push('/'), 1000);
-      
     } catch (err: any) {
       console.error('Signup error:', err);
-      setMessage(err.message || 'Error creating account.');
+      // If error contains "email-already-in-use", we might want to reset the view
+      setMessage(err.message || 'Error processing request.');
     } finally {
       setLoading(false);
     }
@@ -72,7 +104,8 @@ export default function Signup() {
               type="text" 
               value={jobRole}
               onChange={(e) => setJobRole(e.target.value)}
-              className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all" 
+              disabled={otpSent}
+              className={`w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all ${otpSent ? 'opacity-50 cursor-not-allowed' : ''}`} 
               placeholder="e.g., Software Engineer, Teacher, Chef" 
             />
           </div>
@@ -83,7 +116,8 @@ export default function Signup() {
               type="email" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all" 
+              disabled={otpSent}
+              className={`w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all ${otpSent ? 'opacity-50 cursor-not-allowed' : ''}`} 
               placeholder="name@company.com" 
             />
           </div>
@@ -94,17 +128,31 @@ export default function Signup() {
               type="password" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all" 
+              disabled={otpSent}
+              className={`w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all ${otpSent ? 'opacity-50 cursor-not-allowed' : ''}`} 
               placeholder="Create a strong password" 
             />
           </div>
+
+          {otpSent && (
+            <div className="space-y-2 animate-in fade-in slide-in-from-top-4 duration-300">
+              <label className="text-sm font-semibold text-gray-700">Verification Code</label>
+              <input 
+                type="text" 
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                className="w-full p-4 bg-gray-50 border border-primary/30 rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all" 
+                placeholder="Enter 6-digit OTP" 
+              />
+            </div>
+          )}
           
           <button 
             type="submit"
             disabled={loading}
             className="w-full py-4 bg-primary text-white font-bold rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 mt-4"
           >
-            {loading ? 'Creating Account...' : 'Sign Up'}
+            {loading ? 'Processing...' : (otpSent ? 'Verify & Create Account' : 'Send OTP')}
           </button>
         </form>
 

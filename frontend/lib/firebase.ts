@@ -26,7 +26,7 @@ if (getApps().length === 0) {
   app = getApps()[0];
 }
 
-const auth = app ? getAuth(app) : null;
-const db = app ? getFirestore(app) : null;
+const auth = app ? getAuth(app) : ({} as any);
+const db = app ? getFirestore(app) : ({} as any);
 
 export { auth, db };

@@ -27,12 +27,12 @@ export default function InterviewCoach() {
   const synthRef = useRef<SpeechSynthesis | null>(null);
 
   const roles = [
-    "Frontend Developer",
-    "Backend Engineer",
-    "Full-Stack Developer",
+    "Doctor",
+    "Engineer",
+    "Chief",
+    "Teacher",
     "Data Scientist",
-    "Product Manager",
-    "DevOps Engineer"
+    "Other"
   ];
 
   useEffect(() => {
@@ -180,7 +180,7 @@ export default function InterviewCoach() {
   // ───── VOICE MODE UI ─────
   if (mode === 'voice') {
     return (
-      <div className="space-y-6 animate-in fade-in duration-700 max-w-[1240px] mx-auto w-full flex flex-col h-[85vh]">
+      <div className="space-y-6 animate-in fade-in duration-700 max-w-[1240px] mx-auto w-full flex flex-col h-[92vh]">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-semibold text-foreground">Interview Coach</h1>
@@ -281,7 +281,7 @@ export default function InterviewCoach() {
             )}
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] rounded-2xl px-5 py-3 text-sm font-medium ${
+                <div className={`max-w-[80%] rounded-2xl px-5 py-3 text-base font-medium ${
                   msg.role === 'user'
                     ? 'bg-primary text-white'
                     : 'bg-muted/50 border border-border/40 text-foreground'
@@ -317,7 +317,7 @@ export default function InterviewCoach() {
 
   // ───── TEXT MODE UI ─────
   return (
-    <div className="space-y-6 animate-in fade-in duration-700 max-w-[1240px] mx-auto w-full flex flex-col h-[85vh]">
+    <div className="space-y-6 animate-in fade-in duration-700 max-w-[1240px] mx-auto w-full flex flex-col h-[92vh]">
       <div className="flex justify-between items-center sm:items-end">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">Interview Coach</h1>
@@ -370,7 +370,7 @@ export default function InterviewCoach() {
             ) : (
               messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] rounded-2xl p-4 shadow-sm text-sm ${
+                  <div className={`max-w-[80%] rounded-2xl p-4 shadow-sm text-base ${
                     msg.role === 'user' ? 'bg-primary text-white' : 'bg-muted/50 border border-border/40 text-foreground'
                   }`}>
                     {msg.content}
@@ -390,8 +390,8 @@ export default function InterviewCoach() {
                  value={input}
                  onChange={(e) => setInput(e.target.value)}
                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                 className="flex-1 bg-transparent px-4 py-3 outline-none text-sm text-gray-900 placeholder:text-muted-foreground/50"
-                 placeholder="Type your answer..."
+                 className="flex-1 bg-transparent px-4 py-3 outline-none text-base text-gray-900 placeholder:text-muted-foreground/50"
+                 placeholder={messages.length === 0 ? "Describe your role in detail..." : "Type your answer..."}
                  disabled={loading}
                />
                <button onClick={() => handleSendMessage()} disabled={loading || !input.trim()}
